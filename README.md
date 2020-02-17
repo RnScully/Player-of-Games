@@ -7,11 +7,11 @@ I want to create a pipeline for training lightweight players of games, as a proo
 The problem space: the game 2048:
 2048 is a tile sliding game played on a 4 x 4 grid where square tiles hold powers of two, and two same tiles combine to create a tile twice that tiles value. The titular goal of the game is to combine tiles untill you have a tile valued at 2048, but the game goes on much further than that. It is scored by a sum of the value of all combinations done to reach the current game state. 
 
-My objective is to create a fast player of 2048. One that scores well, above 60k points (acheiving a 2048 tile at least 3 times), and that does it, after training, in a computationally inexpensive way as a proof of concept for a system that trains better than route-following AI without human tinkering. 
+My objective is to create a fast player of 2048. One that scores well, above 60k points (acheiving a 2048 tile at least 3 times), and that does it, after training, in a computationally inexpensive way as a proof of concept for a system that trains better than route-following AI without human weight-setting.  
 
 
 - ## This problem has been solved before with N-Tuple-Networks and Deep convolutional networks
-State of the art deep convolutional Neural Nets can acheive scores on this game of 400,000 points, per Kondo and Matsuzaki 2019, and n-tuple-networks score an average scoreof 609,104 when given a max search time of one second. These exhaustive solutions are computationaly expensive, and not suitable for building 
+State of the art deep convolutional Neural Nets can acheive scores on this game of 400,000 points, per Kondo and Matsuzaki 2019, and n-tuple-networks score an average scoreof 609,104 when given a max search time of one second. These exhaustive solutions are computationaly expensive, and not suitable for building fast players, furthermore, the N-Tuple solutions involved human guided initial weighting. 
 
 
 - ## What is new about my Approach:
