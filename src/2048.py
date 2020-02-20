@@ -7,7 +7,7 @@ class Game2048():
     def __init__(self):
         
         self.board = np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
-    
+        self.score = 0
     def show_board(self):
         '''
         displays the current gameboard. ought work in-place to make game interactive without re-calling cells, but...that's not yet working. 
@@ -30,7 +30,7 @@ class Game2048():
         self.board[tile[0],tile[1]]=new_tile[0]
 
 
-    def slide_left(self):
+    def slide_left(self)        :
         ''' slides all tiles to the left, ignoring 0s and merging all duplicates
         +++++++++++
         Attributes:
@@ -41,7 +41,7 @@ class Game2048():
         '''
         new_board = []
         board_no_zeros=[[i for i in rows if i != 0] for rows in self.board]
-
+        inner_score = []
         for row in board_no_zeros:
             if len(row) == 0:
                 new_row =[0,0,0,0]
@@ -50,26 +50,34 @@ class Game2048():
             elif len(row) ==2:
                 if row[0]==row[1]:
                     new_row =[row[0]+row[1],0,0,0]
+                    inner_score.append(row[0]+row[1])
                 else:
                     new_row = [row[0],row[1],0,0]
 
             elif len(row)==3:
                 if row[0]==row[1]:
                     new_row = [row[0]+row[1],row[2],0,0]
+                    inner_score.append(row[0]+row[1])
                 elif row[1]==row[2]:
                     new_row = [row[0],row[1]+row[2],0,0]
+                    inner_score.append(row[1]+row[2])
                 else:
                     new_row = [row[0],row[1],row[2],0]
 
             else: #other case len is 4
                     if row[0] == row[1] and row[2] == row[3]:
-                        new_row = [row[0]+row[1], row[2]+row[3],0,0]      
+                        new_row = [row[0]+row[1], row[2]+row[3],0,0]
+                        inner_score.append(row[0]+row[1])
+                        inner_score.append(row[2]+row[3])     
                     elif row[0]== row[1]:
                         new_row = [row[0]+row[1],row[2],row[3],0]
+                        inner_score.append(row[0]+row[1])
                     elif row[1] == row[2]:
-                        new_row = [row[0],row[2]+row[1],row[3],0]
+                        new_row = [row[0],row[1]+row[2],row[3],0]
+                        inner_score.append(row[1]+row[2])
                     elif row[2] == row[3]:
                         new_row = [row[0],row[1],row[2]+row[3],0]
+                        inner_score.append(row[2]+row[3])
                     else:
                         new_row = row
 
@@ -88,6 +96,7 @@ class Game2048():
             new_board (np.array): the updated 4x4 board after a player move
         '''
         new_board=[]
+        inner_score =[]
         board_no_zeros=[[i for i in rows if i != 0] for rows in self.board]
         for row in board_no_zeros:
             if len(row) == 0:
@@ -97,26 +106,35 @@ class Game2048():
             elif len(row) ==2:
                 if row[0]==row[1]:
                     new_row =[0,0,0,row[0]+row[1]]
+                    inner_score.append(row[0]+row[1])                    
                 else:
                     new_row = [0,0,row[0],row[1]]
 
             elif len(row)==3:
                 if row[0]==row[1]:
                     new_row = [0,0, row[0]+row[1],row[2]]
+                    inner_score.append(row[0]+row[1])
                 elif row[1]==row[2]:
                     new_row = [0,0,row[0],row[1]+row[2]]
+                    inner_score.append(row[1]+row[2])
+                    
                 else:
                     new_row = [0,row[0],row[1],row[2]]
 
             else: #other case len is 4
                     if row[0] == row[1] and row[2] == row[3]:
-                        new_row = [0,0, row[0]+row[1], row[2]+row[3]]      
+                        new_row = [0,0, row[0]+row[1], row[2]+row[3]]    
+                        inner_score.append(row[0]+row[1])
+                        inner_score.append(row[2]+row[3])  
                     elif row[0]== row[1]:
                         new_row = [0,row[0]+row[1],row[2],row[3]]
+                        inner_score.append(row[0]+row[1])
                     elif row[1] == row[2]:
-                        new_row = [0,row[0],row[2]+row[1],row[3]]
+                        new_row = [0,row[0],row[1]+row[2],row[3]]
+                        inner_score.append(row[1]+row[2])
                     elif row[2] == row[3]:
                         new_row = [0,row[0],row[1],row[2]+row[3]]
+                        inner_score.append(row[2]+row[3])
                     else:
                         new_row = row
 
@@ -134,6 +152,7 @@ class Game2048():
             new_board (np.array): the updated 4x4 board after a player move
         '''
         new_board=[]
+        inner_score =[]
         board_no_zeros=[[i for i in rows if i != 0] for rows in self.board.T]
         for row in board_no_zeros:
             if len(row) == 0:
@@ -143,26 +162,34 @@ class Game2048():
             elif len(row) ==2:
                 if row[0]==row[1]:
                     new_row =[0,0,0,row[0]+row[1]]
+                    inner_score.append(row[0]+row[1])
                 else:
                     new_row = [0,0,row[0],row[1]]
 
             elif len(row)==3:
                 if row[0]==row[1]:
                     new_row = [0,0, row[0]+row[1],row[2]]
+                    inner_score.append(row[0]+row[1])
                 elif row[1]==row[2]:
                     new_row = [0,0,row[0],row[1]+row[2]]
+                    inner_score.append(row[1]+row[2])
                 else:
                     new_row = [0,row[0],row[1],row[2]]
 
             else: #other case len is 4
                     if row[0] == row[1] and row[2] == row[3]:
-                        new_row = [0,0, row[0]+row[1], row[2]+row[3]]      
+                        new_row = [0,0, row[0]+row[1], row[2]+row[3]]  
+                        inner_score.append(row[0]+row[1])
+                        inner_score.append(row[2]+row[3])    
                     elif row[2] == row[3]:
                         new_row = [0,row[0],row[1],row[2]+row[3]]
+                        inner_score.append(row[2]+row[3])
                     elif row[0]== row[1]:
                         new_row = [0,row[0]+row[1],row[2],row[3]]
+                        inner_score.append(row[0]+row[1])
                     elif row[1] == row[2]:
                         new_row = [0,row[0],row[1]+row[2],row[3]]
+                        inner_score.append(row[1]+row[2])
 
                     else:
                         new_row = row
@@ -181,7 +208,7 @@ class Game2048():
             new_board (np.array): the updated 4x4 board after a player move
         '''
         new_board=[]
-
+        inner_score =[]
         board_no_zeros=[[i for i in rows if i != 0] for rows in self.board.T]
         for row in board_no_zeros:
             if len(row) == 0:
@@ -191,31 +218,38 @@ class Game2048():
             elif len(row) ==2:
                 if row[0]==row[1]:
                     new_row =[row[0]+row[1],0,0,0]
+                    inner_score.append(row[0]+row[1])
                 else:
                     new_row = [row[0],row[1],0,0]
 
             elif len(row)==3:
                 if row[0]==row[1]:
                     new_row = [row[0]+row[1],row[2],0,0]
+                    inner_score.append(row[0]+row[1])
                 elif row[1]==row[2]:
                     new_row = [row[0],row[1]+row[2],0,0]
+                    inner_score.append(row[1]+row[2])
                 else:
                     new_row = [row[0],row[1],row[2],0]
 
             else: #other case len is 4
                 if row[0] == row[1] and row[2] == row[3]:
-                    new_row = [row[0]+row[1], row[2]+row[3],0,0]      
+                    new_row = [row[0]+row[1], row[2]+row[3],0,0]  
+                    inner_score.append(row[0]+row[1])
+                    inner_score.append(row[2]+row[3])   
 
                 elif row[0]== row[1]:
                     new_row = [row[0]+row[1],row[2],row[3],0]
+                    inner_score.append(row[0]+row[1])
                 elif row[1] == row[2]:
                     new_row = [row[0],row[1]+row[2],row[3],0]
+                    inner_score.append(row[1]+row[2])
                 elif row[2] == row[3]:
                     new_row = [row[0],row[1],row[2]+row[3],0]
+                    inner_score.append(row[2]+row[3])
 
                 else:
                     new_row = row
-
             new_board.append(new_row)
-
+        self.score += sum(inner_score)
         self.board =  np.array(new_board).T
