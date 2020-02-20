@@ -27,17 +27,22 @@ class Game2048():
         new_tile = random.choices([2,4], weights=[.8,.2])
         empty_idx= [(i,j) for i, j in zip(empty_tiles[0],empty_tiles[1])]
         tile = random.choice(empty_idx)
+        self.score += sum(inner_score)
         self.board[tile[0],tile[1]]=new_tile[0]
 
 
     def slide_left(self)        :
-        ''' slides all tiles to the left, ignoring 0s and merging all duplicates
+        ''' slides all tiles to the left, ignoring 0s and merging all duplicates, records score as the sum of all merges. 
         +++++++++++
         Attributes:
-            board (np.array): the 4x4 gameboard
+            self.board (np.array): the 4x4 gameboard
         +++++++++++
         Returns:
-            new_board (np.array): the updated 4x4 board after a player move
+            Nothing
+        +++++++++++
+        Updates
+        self.score (int): sum of all merges done in the method added to self.score
+        self.board (np.array): current 4x4 boardstate 
         '''
         new_board = []
         board_no_zeros=[[i for i in rows if i != 0] for rows in self.board]
@@ -82,18 +87,23 @@ class Game2048():
                         new_row = row
 
             new_board.append(new_row)
+        self.score += sum(inner_score)    
         self.board = np.array(new_board)
 
 
 
     def slide_right(self):
-        ''' slides all tiles to the right, ignoring 0s and merging all duplicates
+        ''' slides all tiles to the right, ignoring 0s and merging all duplicates, records score as the sum of all merges. 
         +++++++++++
         Attributes:
-            board (np.array): the 4x4 gameboard
+            self.board (np.array): the 4x4 gameboard
         +++++++++++
         Returns:
-            new_board (np.array): the updated 4x4 board after a player move
+            Nothing
+        +++++++++++
+        Updates
+        self.score (int): sum of all merges done in the method added to self.score
+        self.board (np.array): current 4x4 boardstate 
         '''
         new_board=[]
         inner_score =[]
@@ -139,17 +149,22 @@ class Game2048():
                         new_row = row
 
             new_board.append(new_row)
+        self.score += sum(inner_score)    
         self.board = np.array(new_board)
 
 
     def slide_down(self):
-        ''' slides all tiles down, ignoring 0s and merging all duplicates
+        ''' slides all tiles down, ignoring 0s and merging all duplicates, records score as the sum of all merges. 
         +++++++++++
         Attributes:
-            board (np.array): the 4x4 gameboard
+            self.board (np.array): the 4x4 gameboard
         +++++++++++
         Returns:
-            new_board (np.array): the updated 4x4 board after a player move
+            Nothing
+        +++++++++++
+        Updates
+        self.score (int): sum of all merges done in the method added to self.score
+        self.board (np.array): current 4x4 boardstate 
         '''
         new_board=[]
         inner_score =[]
@@ -195,17 +210,22 @@ class Game2048():
                         new_row = row
 
             new_board.append(new_row)
+        self.score += sum(inner_score)    
         self.board =  np.array(new_board).T
 
 
     def slide_up(self):
-        ''' slides all tiles up, ignoring 0s and merging all duplicates
+        ''' slides all tiles to the right, ignoring 0s and merging all duplicates, records score as the sum of all merges. 
         +++++++++++
         Attributes:
-            board (np.array): the 4x4 gameboard
+            self.board (np.array): the 4x4 gameboard
         +++++++++++
         Returns:
-            new_board (np.array): the updated 4x4 board after a player move
+            Nothing
+        +++++++++++
+        Updates
+        self.score (int): sum of all merges done in the method added to self.score
+        self.board (np.array): current 4x4 boardstate 
         '''
         new_board=[]
         inner_score =[]
