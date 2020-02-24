@@ -3,71 +3,119 @@ import neat
 import time
 import pickle
 
-def ai_suggest_move(net, board_state):
-    output = net.activate(board_state)
+def ai_suggest_move(net, game, headless = False):
+    '''
+    a method which has the ai suggest a move in 2048 and trys the move. If it is not 
+    valid, valid_moves is updated in the game. this method then uses valid_moves to filter out invalid moves from the Ai's suggestion. 
+    I have some concerns about how this will affect the learning of the game, but can't come up with a better way to teach this nn not to TRY THINGS THAT ARE ILLEGAL. dumb boy. he's a friend, though.
+    
+    Attributes:
+    
+    Returns
+    move(int): a 2, 4, 6, or an 8 that maps to move down, move left, move right, and move up respectively. 
+    -1 (int): a marker that will tell the game that the AI can't make any more moves and to trigger end-game. 
+    
+    '''
+    output = net.activate(game.board.ravel())
     values = [2, 4, 6, 8]
-    d = dict(zip(output, values))
+    valid_moves = game.valid_moves
+   
+    d = dict(zip(np.array(output)[valid_moves], np.array(values)[valid_moves]))
+    #print(np.array(['up','left', 'right', 'down'])[valid_moves])
+    #print(game.board) #testing prints
+    
+    if len(d.keys()) == 0:
+        #print('ai_suggest_move is out of possible moves')
+        game.game_over = True #game is over
+        return  -1
     move = d.get(max(d.keys()))
-#     if move == 2: #this section outputs the move for visuals and debugging
-#         print('slide down')
-#     elif move == 4:
-#         print('slide left')
-#     elif move == 6:
-#         print('slide right')
-#     else:
-#         print('slide up')
+    
+    
+    if headless == False:
+        if move == 2: #this section outputs the move for visuals and debugging
+            print('slide down')
+        elif move == 4:
+            print('slide left')
+        elif move == 6:
+            print('slide right')
+        else:
+            print('slide up')
     return move
 
-def gameplay_eval(genomes, config):
+def empties_state(last_board, new_board):
+    '''
+    gives a value based on the improvement of board states, such that 
+    maximizing open space will give heightened fitness. 
+    '''
+    new_empties = len(np.where(new_board == 0))- len(np.where(last_board == 0))
+    if new_empties > 0:
+        return empties/10000 # May be to large or too small. Major concern is that it might go over one. actually...if the game goes on for 400 turns, it will. So that's...worth thinking about. 
+    else:
+        return 0
+
+def gameplay_eval(genomes, config, headless = True):
     '''
     a method which will determine how good the AI is doing on the game. 
-    I propose from a first pass a minimization of tiles on the board. '''
-    population_size = 50 # set number of games to run to find best player
-    induviduals = []# fill with neat generated n population_size 
+     
+    '''
     
     for genome_id, genome in genomes:
+        fit = 0
         net = neat.nn.RecurrentNetwork.create(genome, config)
 
         #have an AI try the game, record its score metrics. 
         game = Game2048(ai = True, headless = True)
         while game.game_over == False:
-            give_to_ai = game.board.ravel()
+            last_board = game.board
             last_score = game.score
-            empties = np.where(game.board == 0)[0] #np.where returns a tuple with an array inside it, for some reason!?!
-            get_from_ai = ai_suggest_move(net, give_to_ai) #must be int 2, 4, 6 or 8, related to moves down, right, left and up respectively
+            
+            empties1 = np.where(game.board == 0)[0] #np.where returns a tuple with an array inside it, for some reason!?!
+            get_from_ai = ai_suggest_move(net, game, headless = True) #must be int 2, 4, 6 or 8, related to moves down, left, right and up respectively
+            if get_from_ai == -1:
+                break
+            
             game.get_move(ai_move = get_from_ai)
-            game.game_step()
+            valid = game.game_step()
+            if valid == -1:
+                continue
+            new_board = game.board
             updated_score = game.score
-            genome.fitness = game.score/44000 #fitness for now is just the easiest thing to measure because I already built the score method. 
-                                                #THIS IS PROBABLY NOT A GOOD FITNESS METRIC
+            fit += empties_state(last_board, new_board)
+            
+            
+            
+        genome.fitness = (.3*fit)+ (.7*game.score/44000) #fitness is a combination of the sum of empty tiles made every turn and the score. 
+        #print(genome.fitness)                               
         
         # print(genome.fitness, genome_id)      #handles that show best guy.        
 
 
 
-def train_ai(config_file):
+def train_ai(config_path):
     """
     runs the NEAT algorithm to train a neural network to play 2048
     :param config_file: location of config file
-    :return: None
+    :return: winnner (NEAT genome file) best genome that the algorithm has developed 
     """
+    # winner. uhm...seems to be the wrong guy. Maybe only the best from the latest algo?
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                         config_file)
+                         config_path)
 
     # Create the population, which is the top-level object for a NEAT run.
     p = neat.Population(config)
 
     # Add a stdout reporter to show progress in the terminal.
-    #p.add_reporter(neat.StdOutReporter(True))
+    p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
-    #p.add_reporter(stats)
-    #p.add_reporter(neat.Checkpointer(5))
+    p.add_reporter(stats)
+    p.add_reporter(neat.Checkpointer(5))
 
     # Run for up to 50 generations.
     #print('now running for winner step')
     winner = p.run(gameplay_eval, 50)
-    #print(winner)
+    print('\nBest genome:\n{!s}'.format(winner))
 
     # show final stats
-    print('\nBest genome:\n{!s}'.format(winner))
+    #print(pop.statistics.best_genome())
+    return winner
