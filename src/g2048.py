@@ -7,12 +7,14 @@ class Game2048():
     def __init__(self, headless = False, ai = False):
         
         self.board = np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
+        self.add_tile() #initilaizes the board with a tile added. 
         self.score = 0
         self.current_move = None
         self.game_over = False
         self.history = []
         self.headless = headless
         self.ai = ai
+        self.valid_moves = [True, True, True, True]
 
     def get_move(self,ai_move=None):
         """
@@ -53,6 +55,9 @@ class Game2048():
         self.board[tile[0],tile[1]]=new_tile[0]
 
     def turn_handling(self):
+        '''
+        method which handles the board's side of the turn. records the game state and adds random tiles
+        '''
         self.add_tile()
         self.history.append(self.board.ravel())
         if self.headless == False:
@@ -305,46 +310,64 @@ class Game2048():
         '''
         a method which will step through one turn of 2048's gameplay loop, made to give the AI easier handles. 
         '''
-        self.turn_handling()
+        
+        completed_move = False 
+        
         #Ai calls move and cannot give anything but 2, 4, 6, and 8
-        if self.current_move == 6:
-            is_valid = self.slide_right()
-                if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+        #indexes of output in AI handler:
+        # down, left, right, up
+        # 2       4     6     8
+        #[0]     [1]   [2]    [3]
+        while completed_move == False:
+            if self.current_move == 6:
+                is_valid = self.slide_right()
+                if np.array_equal(self.board, is_valid) == False: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                    
                     self.board = is_valid
+                    completed_move = True
                 else:
                     print('please use a valid move')
                     self.current_move = None
+                    self.valid_moves[2] = False #updates the valid moves to tell the AI it can't keep retrying that. 
                     return -1
-                    
-        elif self.current_move == 8:
-            is_valid = self.slide_up()
-                if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                        
+            elif self.current_move == 8:
+                is_valid = self.slide_up()
+                if np.array_equal(self.board, is_valid) == False: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
                     self.board = is_valid
+                    completed_move = True
                 else:
                     
                     self.current_move = None
-                   return -1
-                    
-        elif self.current_move == 4:
-            is_valid = self.slide_left()
-                if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                    self.valid_moves[3] = False #updates the valid moves to tell the AI it can't keep retrying that. 
+                    return -1
+                        
+            elif self.current_move == 4:
+                is_valid = self.slide_left()
+                if np.array_equal(self.board, is_valid) == False: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
                     self.board = is_valid
+                    completed_move = True
                 else:
                     print('please use a valid move')
                     self.current_move = None
+                    self.valid_moves[1] = False #updates the valid moves to tell the AI it can't keep retrying that. 
                     return -1
 
-        elif self.current_move == 2:
-            is_valid = self.slide_down()
-                if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+            elif self.current_move == 2:
+                is_valid = self.slide_down()
+                if np.array_equal(self.board, is_valid) == False: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
                     self.board = is_valid
+                    completed_move = True
                 else:
                     print('please use a valid move')
                     self.current_move = None
+                    self.valid_moves[0] = False #updates the valid moves to tell the AI it can't keep retrying that. 
                     return -1
-        else:
-            print('something has gone wrong in game_step!')
-            print(self.current_move)
+            else:
+                print('something has gone wrong in game_step!')
+                print(self.current_move)
+            self.valid_moves = [True, True, True, True]
+            self.turn_handling()
 
 
 
@@ -353,7 +376,7 @@ class Game2048():
         a method which should operate 2048's gameplay loop. (show board, wait for move, update board, add new tile, loop)
         '''
         while self.game_over == False:
-            self.turn_handling()
+            
             
             if self.current_move == 'q':
                 break
@@ -365,7 +388,7 @@ class Game2048():
 
                 elif self.current_move == '6' or self.current_move.lower() =='a':
                     is_valid = self.slide_right()
-                    if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                    if np.array_equal(self.board, is_valid) == False: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
                         self.board = is_valid
                     else:
                         print('please use a valid move')
@@ -375,7 +398,7 @@ class Game2048():
 
                 elif self.current_move == '8' or self.current_move.lower() =='w':
                     is_valid = self.slide_up()
-                    if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                    if np.array_equal(self.board, is_valid) == False: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
                         self.board = is_valid
                     else:
                         print('please use a valid move')
@@ -384,7 +407,7 @@ class Game2048():
 
                 elif self.current_move == '4' or self.current_move.lower() =='d':
                     is_valid = self.slide_left()
-                    if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                    if np.array_equal(self.board, is_valid) == False: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
                         self.board = is_valid
                     else:
                         print('please use a valid move')
@@ -393,7 +416,7 @@ class Game2048():
                     
                 elif self.current_move == '2' or self.current_move.lower() =='s':
                     is_valid = self.slide_down()
-                    if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                    if np.array_equal(self.board, is_valid) == False: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
                         self.board = is_valid
                     else:
                         print('please use a valid move')
@@ -404,6 +427,8 @@ class Game2048():
                     print('please use a valid move')
                     self.current_move = None
                     continue
+
+                self.turn_handling()
 
 if __name__ == "__main__":
     g = Game2048()
