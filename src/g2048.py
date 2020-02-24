@@ -319,6 +319,9 @@ class Game2048():
         # 2       4     6     8
         #[0]     [1]   [2]    [3]
         while completed_move == False:
+            if self.valid_moves == [False, False, False, False]:
+                break
+            
             if self.current_move == 6:
                 is_valid = self.slide_right()
                 if np.array_equal(self.board, is_valid) == False: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
@@ -326,7 +329,6 @@ class Game2048():
                     self.board = is_valid
                     completed_move = True
                 else:
-                    print('please use a valid move')
                     self.current_move = None
                     self.valid_moves[2] = False #updates the valid moves to tell the AI it can't keep retrying that. 
                     return -1
@@ -348,7 +350,6 @@ class Game2048():
                     self.board = is_valid
                     completed_move = True
                 else:
-                    print('please use a valid move')
                     self.current_move = None
                     self.valid_moves[1] = False #updates the valid moves to tell the AI it can't keep retrying that. 
                     return -1
@@ -359,10 +360,10 @@ class Game2048():
                     self.board = is_valid
                     completed_move = True
                 else:
-                    print('please use a valid move')
                     self.current_move = None
                     self.valid_moves[0] = False #updates the valid moves to tell the AI it can't keep retrying that. 
                     return -1
+            
             else:
                 print('something has gone wrong in game_step!')
                 print(self.current_move)

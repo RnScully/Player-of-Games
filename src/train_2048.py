@@ -1,7 +1,12 @@
 from g2048 import Game2048
 import neat
-import time
+import time, sys
 import pickle
+import argparse
+import os
+import random
+import numpy
+
 
 def ai_suggest_move(net, game, headless = False):
     '''
@@ -46,10 +51,17 @@ def empties_state(last_board, new_board):
     '''
     gives a value based on the improvement of board states, such that 
     maximizing open space will give heightened fitness. 
+    Attributes:
+    last_board (np.array): board from previous game state
+    new_board (np.array): board after move was made
+
+    Returns:
+    float or 0: if new board is better (more open space) than old board, it gives a small bonus to fitness. 
+    
     '''
     new_empties = len(np.where(new_board == 0))- len(np.where(last_board == 0))
     if new_empties > 0:
-        return empties/10000 # May be to large or too small. Major concern is that it might go over one. actually...if the game goes on for 400 turns, it will. So that's...worth thinking about. 
+        return new_empties/10000 # May be to large or too small. Major concern is that it might go over one. actually...if the game goes on for 400 turns, it will. So that's...worth thinking about. 
     else:
         return 0
 
@@ -119,3 +131,14 @@ def train_ai(config_path):
     # show final stats
     #print(pop.statistics.best_genome())
     return winner
+
+
+parser = argparse.ArgumentParser(description='A tutorial of argparse!')
+parser.add_argument("-h", required = False, default =True, help='trian the net in Headless mode')
+parser.add_argument('-c', required=True, help='path of the config file')
+
+args = parser.parse_args()
+h = args.h
+
+if __name__ == "__main__":
+    winner = train_ai(config_path)
