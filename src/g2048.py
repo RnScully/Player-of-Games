@@ -42,7 +42,9 @@ class Game2048():
         empty_tiles = np.where(self.board ==0)
         if len(empty_tiles[0]) == 0 :
             self.game_over = True
-            print('Game Over!')
+            if self.headless == False:
+                print('Game Over!')
+            
             return(self.score)
 
         new_tile = random.choices([2,4], weights=[.8,.2])
@@ -53,6 +55,8 @@ class Game2048():
     def turn_handling(self):
         self.add_tile()
         self.history.append(self.board.ravel())
+        if headless == False:
+            self.show_board()
 
     def slide_left(self)        :
         ''' slides all tiles to the left, ignoring 0s and merging all duplicates, records score as the sum of all merges. 
@@ -297,13 +301,33 @@ class Game2048():
         self.score += sum(inner_score)
         self.board =  np.array(new_board).T
 
+    def game_step(self):
+        '''
+        a method which will step through one turn of 2048's gameplay loop, made to give the AI easier handles. 
+        '''
+        self.turn_handling()
+        #Ai calls move and cannot give anything but 2, 4, 6, and 8
+        if self.current_move == 6:
+            self.slide_right()
+        elif self.current_move == 8:
+            self.slide_up()
+        elif self.current_move == 4:
+            self.slide_left()
+        elif self.current_move == 2:
+            self.slide_down()
+        else:
+            print('something has gone wrong in game_step!')
+            print(self.current_move)
+
+
+
     def game_loop(self):
         '''
         a method which should operate 2048's gameplay loop. (show board, wait for move, update board, add new tile, loop)
         '''
         while self.game_over == False:
             self.turn_handling()
-            self.show_board()
+            
             if self.current_move == 'q':
                 break
             self.current_move = None
