@@ -55,7 +55,7 @@ class Game2048():
     def turn_handling(self):
         self.add_tile()
         self.history.append(self.board.ravel())
-        if headless == False:
+        if self.headless == False:
             self.show_board()
 
     def slide_left(self)        :
@@ -115,7 +115,7 @@ class Game2048():
 
             new_board.append(new_row)
         self.score += sum(inner_score)    
-        self.board = np.array(new_board)
+        return np.array(new_board)
 
 
 
@@ -177,7 +177,7 @@ class Game2048():
 
             new_board.append(new_row)
         self.score += sum(inner_score)    
-        self.board = np.array(new_board)
+        return np.array(new_board)
 
 
     def slide_down(self):
@@ -238,7 +238,7 @@ class Game2048():
 
             new_board.append(new_row)
         self.score += sum(inner_score)    
-        self.board =  np.array(new_board).T
+        return np.array(new_board).T
 
 
     def slide_up(self):
@@ -299,7 +299,7 @@ class Game2048():
                     new_row = row
             new_board.append(new_row)
         self.score += sum(inner_score)
-        self.board =  np.array(new_board).T
+        return np.array(new_board).T
 
     def game_step(self):
         '''
@@ -308,13 +308,40 @@ class Game2048():
         self.turn_handling()
         #Ai calls move and cannot give anything but 2, 4, 6, and 8
         if self.current_move == 6:
-            self.slide_right()
+            is_valid = self.slide_right()
+                if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                    self.board = is_valid
+                else:
+                    print('please use a valid move')
+                    self.current_move = None
+                    return -1
+                    
         elif self.current_move == 8:
-            self.slide_up()
+            is_valid = self.slide_up()
+                if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                    self.board = is_valid
+                else:
+                    
+                    self.current_move = None
+                   return -1
+                    
         elif self.current_move == 4:
-            self.slide_left()
+            is_valid = self.slide_left()
+                if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                    self.board = is_valid
+                else:
+                    print('please use a valid move')
+                    self.current_move = None
+                    return -1
+
         elif self.current_move == 2:
-            self.slide_down()
+            is_valid = self.slide_down()
+                if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                    self.board = is_valid
+                else:
+                    print('please use a valid move')
+                    self.current_move = None
+                    return -1
         else:
             print('something has gone wrong in game_step!')
             print(self.current_move)
@@ -335,14 +362,44 @@ class Game2048():
                 self.get_move()
                 if self.current_move == "q":
                     break
+
                 elif self.current_move == '6' or self.current_move.lower() =='a':
-                    self.slide_right()
+                    is_valid = self.slide_right()
+                    if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                        self.board = is_valid
+                    else:
+                        print('please use a valid move')
+                        self.current_move = None
+                        continue
+
+
                 elif self.current_move == '8' or self.current_move.lower() =='w':
-                    self.slide_up()
+                    is_valid = self.slide_up()
+                    if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                        self.board = is_valid
+                    else:
+                        print('please use a valid move')
+                        self.current_move = None
+                        continue
+
                 elif self.current_move == '4' or self.current_move.lower() =='d':
-                    self.slide_left()
+                    is_valid = self.slide_left()
+                    if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                        self.board = is_valid
+                    else:
+                        print('please use a valid move')
+                        self.current_move = None
+                        continue
+                    
                 elif self.current_move == '2' or self.current_move.lower() =='s':
-                    self.slide_down()
+                    is_valid = self.slide_down()
+                    if self.board != is_valid: #checks to see if the move entered is a valid move (you cannot make moves that don't change the board)
+                        self.board = is_valid
+                    else:
+                        print('please use a valid move')
+                        self.current_move = None
+                        continue
+                    
                 else:
                     print('please use a valid move')
                     self.current_move = None
