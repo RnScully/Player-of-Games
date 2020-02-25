@@ -68,7 +68,7 @@ def empties_state(last_board, new_board):
     else:
         return 0
 
-def score_capper(cumulative_empties,score):
+def score_capper(cumulative_empties,game):
         '''
         a function that takes constantly growing scores and fits them to a curve assymptoting at 1. 
         Attributes
@@ -77,15 +77,25 @@ def score_capper(cumulative_empties,score):
         
         Returns: capped_score, a float less than one. 
         '''
+        
+        score = game.score
+        
+        biggest = game.board.max()
+        
+        best_tile_points = dict({128: 0.05, 256: 0.1, 512: 0.15, 1024: 0.2, 2048: 0.25, 4096: 0.3})
+        big_points[biggest]
         if cumulative_empties > 0: # if there were never any new empties, 
             x = (-1/cumulative_empties)+1 
         else:
             x = 0 
         
-        #y = (-1/score)+1
-               
-        #return y*.3+x*.7 #score seems to be messing things up. they all get the sameish score by being bad
-        return x
+        
+        
+        score_points = (-1/np.log(game.score))+1
+        board_managment = (-1/(np.log(cumulative_empties)))+1
+        best_tile = best_tile_points[biggest]
+
+        return best_tile +0.2*score_points+0.5*board_management
 
 
 def gameplay_eval(genomes, config):
@@ -205,21 +215,24 @@ def train_ai(config_path,num_generations, parallel = False):
         return winner
 
 
-parser = argparse.ArgumentParser(description='A tutorial of argparse!')
-parser.add_argument("-v", default =True, help='trian the net in Headless mode')
-parser.add_argument('-c', required=True, help='path of the config file')
-parser.add_argument('-p', default = False, help = 'parallelize the workload')
-parser.add_argument('-n', required = True, default = False, help = 'name for model')
-parser.add_argument('-g', required = False, default = 100, help = 'generations to run')
 
-args = parser.parse_args()
-headless = bool(args.v)
-config_path = args.c
-is_parallel = bool(args.p)
-name = args.n
-num_generations = int(args.g)
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='A tutorial of argparse!')
+    parser.add_argument("-v", default =True, help='trian the net in Headless mode')
+    parser.add_argument('-c', required=True, help='path of the config file')
+    parser.add_argument('-p', default = False, help = 'parallelize the workload')
+    parser.add_argument('-n', required = True, default = False, help = 'name for model')
+    parser.add_argument('-g', required = False, default = 100, help = 'generations to run')
+
+    args = parser.parse_args()
+    headless = bool(args.v)
+    config_path = args.c
+    is_parallel = bool(args.p)
+    name = args.n
+    num_generations = int(args.g)
+
     if is_parallel == False:
         winner = train_ai(config_path, num_generations, parallel = False)
     if is_parallel == True:
