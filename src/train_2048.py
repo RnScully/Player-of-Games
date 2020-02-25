@@ -83,7 +83,7 @@ def score_capper(cumulative_empties,game):
         biggest = game.board.max()
         
         best_tile_points = dict({128: 0.05, 256: 0.1, 512: 0.15, 1024: 0.2, 2048: 0.25, 4096: 0.3})
-        big_points[biggest]
+        
         if cumulative_empties > 0: # if there were never any new empties, 
             x = (-1/cumulative_empties)+1 
         else:
@@ -105,7 +105,7 @@ def gameplay_eval(genomes, config):
     '''
     
     for genome_id, genome in genomes:
-        fit = 0
+        c_empties = 0
         net = neat.nn.RecurrentNetwork.create(genome, config)
 
         #have an AI try the game, record its score metrics. 
@@ -125,16 +125,16 @@ def gameplay_eval(genomes, config):
 
             new_board = game.board
             updated_score = game.score
-            fit += empties_state(last_board, new_board)
+            c_empties += empties_state(last_board, new_board)
                   
             
-        genome.fitness = score_capper(fit, game.score)
+        genome.fitness = score_capper(c_empties, game.score)
             
             
             
                  
 def parallel_eval(genome, config): #takes SINGLE GENOME!
-    fit = 0
+    c_empties = 0
     net = neat.nn.RecurrentNetwork.create(genome, config)
 
     #have an AI try the game, record its score metrics. 
@@ -154,10 +154,10 @@ def parallel_eval(genome, config): #takes SINGLE GENOME!
             continue
         new_board = game.board
         updated_score = game.score
-        fit += empties_state(last_board, new_board)
+        c_empties += empties_state(last_board, new_board)
             
             
-    fitness = score_capper(fit, game.score)
+    fitness = score_capper(c_empties, game)
     return fitness
 
 
