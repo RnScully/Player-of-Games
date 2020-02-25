@@ -5,8 +5,9 @@ import pickle
 import argparse
 import os
 import random
-import numpy
+import numpy as np
 import multiprocessing
+from tools import save_model
 
 
 def ai_suggest_move(net, game, headless = False):
@@ -61,13 +62,13 @@ def empties_state(last_board, new_board):
     int or 0: if new board is better (more open space) than old board, it gives the number of tiles minimized. 
     
     '''
-    new_empties = len(np.where(new_board == 0))- len(np.where(last_board == 0))
+    new_empties = len(np.where(new_board == 0)[0])- len(np.where(last_board == 0)[0])
     if new_empties > 0:
         return new_empties # May be to large or too small. Major concern is that it might go over one. actually...if the game goes on for 400 turns, it will. So that's...worth thinking about. 
     else:
         return 0
 
-def score_capper(x,y):
+def score_capper(cumulative_empties,score):
         '''
         a function that takes constantly growing scores and fits them to a curve assymptoting at 1. 
         Attributes
@@ -76,11 +77,15 @@ def score_capper(x,y):
         
         Returns: capped_score, a float less than one. 
         '''
+        if cumulative_empties > 0: # if there were never any new empties, 
+            x = (-1/cumulative_empties)+1 
+        else:
+            x = 0 
         
-        x1 = (-1/x)+1
-        y1 = (-1/x)+1
+        #y = (-1/score)+1
                
-        return y1*.7+x1*.3
+        #return y*.3+x*.7 #score seems to be messing things up. they all get the sameish score by being bad
+        return x
 
 
 def gameplay_eval(genomes, config):
@@ -99,7 +104,6 @@ def gameplay_eval(genomes, config):
             last_board = game.board
             last_score = game.score
             
-            empties1 = np.where(game.board == 0)[0] #np.where returns a tuple with an array inside it, for some reason!?!
             get_from_ai = ai_suggest_move(net, game, headless = True) #must be int 2, 4, 6 or 8, related to moves down, left, right and up respectively
             if get_from_ai == -1:
                 break
@@ -147,7 +151,7 @@ def parallel_eval(genome, config): #takes SINGLE GENOME!
     return fitness
 
 
-def train_ai(config_path, parallel = False):
+def train_ai(config_path,num_generations, parallel = False):
     """
     runs the NEAT algorithm to train a neural network to play 2048
     :param config_file: location of config file
@@ -166,16 +170,16 @@ def train_ai(config_path, parallel = False):
         p.add_reporter(neat.StdOutReporter(True))
         stats = neat.StatisticsReporter()
         p.add_reporter(stats)
-        p.add_reporter(neat.Checkpointer(5))
+        p.add_reporter(neat.Checkpointer(20))
 
-        # Run for up to 50 generations.
+        # Run for however many generations num_generations passes in. 
         #print('now running for winner step')
         pe = neat.ParallelEvaluator(multiprocessing.cpu_count()-1, parallel_eval)
-        winner = p.run(pe.evaluate, 500)
+        winner = p.run(pe.evaluate, num_generations)
         return winner
         
         
-    elif parallel = False:
+    elif parallel == False:
         # winner. uhm...seems to be the wrong guy. Maybe only the best from the latest algo?
         config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                              neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -192,7 +196,7 @@ def train_ai(config_path, parallel = False):
 
         # Run for up to 50 generations.
         #print('now running for winner step')
-        winner = p.run(gameplay_eval, 10)
+        winner = p.run(gameplay_eval, num_generations)
 
         print('\nBest genome:\n{!s}'.format(winner))
 
@@ -202,14 +206,23 @@ def train_ai(config_path, parallel = False):
 
 
 parser = argparse.ArgumentParser(description='A tutorial of argparse!')
-parser.add_argument("-h", required = False, default =True, help='trian the net in Headless mode')
+parser.add_argument("-v", default =True, help='trian the net in Headless mode')
 parser.add_argument('-c', required=True, help='path of the config file')
-parser.add_arugment('-p', required = False, default = False, help = 'parallelize the workload')
+parser.add_argument('-p', default = False, help = 'parallelize the workload')
+parser.add_argument('-n', required = True, default = False, help = 'name for model')
+parser.add_argument('-g', required = False, default = 100, help = 'generations to run')
 
 args = parser.parse_args()
-h = args.h
+headless = bool(args.v)
 config_path = args.c
-is_parallel = args.p
+is_parallel = bool(args.p)
+name = args.n
+num_generations = int(args.g)
 
 if __name__ == "__main__":
-    winner = train_ai(config_path)
+    if is_parallel == False:
+        winner = train_ai(config_path, num_generations, parallel = False)
+    if is_parallel == True:
+        winner = train_ai(config_path, num_generations, parallel = True)
+
+    save_model(winner, name)
