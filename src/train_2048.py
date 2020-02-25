@@ -49,23 +49,40 @@ def ai_suggest_move(net, game, headless = False):
 
 def empties_state(last_board, new_board):
     '''
-    gives a value based on the improvement of board states, such that 
+    determines how many tiles the last move cleared. 
+    Incentivises making moves that clear tiles so that
     maximizing open space will give heightened fitness. 
     Attributes:
     last_board (np.array): board from previous game state
     new_board (np.array): board after move was made
 
     Returns:
-    float or 0: if new board is better (more open space) than old board, it gives a small bonus to fitness. 
+    int or 0: if new board is better (more open space) than old board, it gives the number of tiles minimized. 
     
     '''
     new_empties = len(np.where(new_board == 0))- len(np.where(last_board == 0))
     if new_empties > 0:
-        return new_empties/10000 # May be to large or too small. Major concern is that it might go over one. actually...if the game goes on for 400 turns, it will. So that's...worth thinking about. 
+        return new_empties # May be to large or too small. Major concern is that it might go over one. actually...if the game goes on for 400 turns, it will. So that's...worth thinking about. 
     else:
         return 0
 
-def gameplay_eval(genomes, config, headless = True):
+def score_capper(x,y)
+        '''
+        a function that takes constantly growing scores and fits them to a curve assymptoting at 1. 
+        Attributes
+        y(any number)
+        x(any number)
+        
+        Returns: capped_score, a float less than one. 
+        '''
+        
+        x1 = (-1/x)+1
+        y1 = (-1/x)+1
+               
+        return y1*.7+x1*.3
+
+
+def gameplay_eval(genomes, config):
     '''
     a method which will determine how good the AI is doing on the game. 
      
@@ -90,17 +107,43 @@ def gameplay_eval(genomes, config, headless = True):
             valid = game.game_step()
             if valid == -1:
                 continue
+
             new_board = game.board
             updated_score = game.score
             fit += empties_state(last_board, new_board)
+                  
+            
+        genome.fitness = score_capper(fit, game.score)
             
             
             
-        genome.fitness = (.3*fit)+ (.7*game.score/44000) #fitness is a combination of the sum of empty tiles made every turn and the score. 
-        #print(genome.fitness)                               
-        
-        # print(genome.fitness, genome_id)      #handles that show best guy.        
+                 
+def parallel_eval(genome, config): #takes SINGLE GENOME!
+    fit = 0
+    net = neat.nn.RecurrentNetwork.create(genome, config)
 
+    #have an AI try the game, record its score metrics. 
+    game = Game2048(ai = True, headless = True)
+    while game.game_over == False:
+        last_board = game.board
+        last_score = game.score
+
+        empties1 = np.where(game.board == 0)[0] #np.where returns a tuple with an array inside it, for some reason!?!
+        get_from_ai = ai_suggest_move(net, game, headless = True) #must be int 2, 4, 6 or 8, related to moves down, left, right and up respectively
+        if get_from_ai == -1:
+            break
+
+        game.get_move(ai_move = get_from_ai)
+        valid = game.game_step()
+        if valid == -1:
+            continue
+        new_board = game.board
+        updated_score = game.score
+        fit += empties_state(last_board, new_board)
+            
+            
+    fitness = score_capper(fit, game.score)
+    return fitness
 
 
 def train_ai(config_path):
