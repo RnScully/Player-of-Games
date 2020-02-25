@@ -6,6 +6,7 @@ import argparse
 import os
 import random
 import numpy
+import multiprocessing
 
 
 def ai_suggest_move(net, game, headless = False):
@@ -66,7 +67,7 @@ def empties_state(last_board, new_board):
     else:
         return 0
 
-def score_capper(x,y)
+def score_capper(x,y):
         '''
         a function that takes constantly growing scores and fits them to a curve assymptoting at 1. 
         Attributes
@@ -146,42 +147,69 @@ def parallel_eval(genome, config): #takes SINGLE GENOME!
     return fitness
 
 
-def train_ai(config_path):
+def train_ai(config_path, parallel = False):
     """
     runs the NEAT algorithm to train a neural network to play 2048
     :param config_file: location of config file
     :return: winnner (NEAT genome file) best genome that the algorithm has developed 
     """
-    # winner. uhm...seems to be the wrong guy. Maybe only the best from the latest algo?
-    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
+    
+    if parallel == True:
+        config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_path)
 
-    # Create the population, which is the top-level object for a NEAT run.
-    p = neat.Population(config)
+        # Create the population, which is the top-level object for a NEAT run.
+        p = neat.Population(config)
 
-    # Add a stdout reporter to show progress in the terminal.
-    p.add_reporter(neat.StdOutReporter(True))
-    stats = neat.StatisticsReporter()
-    p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(5))
+        # Add a stdout reporter to show progress in the terminal.
+        p.add_reporter(neat.StdOutReporter(True))
+        stats = neat.StatisticsReporter()
+        p.add_reporter(stats)
+        p.add_reporter(neat.Checkpointer(5))
 
-    # Run for up to 50 generations.
-    #print('now running for winner step')
-    winner = p.run(gameplay_eval, 50)
-    print('\nBest genome:\n{!s}'.format(winner))
+        # Run for up to 50 generations.
+        #print('now running for winner step')
+        pe = neat.ParallelEvaluator(multiprocessing.cpu_count()-1, parallel_eval)
+        winner = p.run(pe.evaluate, 500)
+        return winner
+        
+        
+    elif parallel = False:
+        # winner. uhm...seems to be the wrong guy. Maybe only the best from the latest algo?
+        config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                             neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                             config_path)
 
-    # show final stats
-    #print(pop.statistics.best_genome())
-    return winner
+        # Create the population, which is the top-level object for a NEAT run.
+        p = neat.Population(config)
+
+        # Add a stdout reporter to show progress in the terminal.
+        p.add_reporter(neat.StdOutReporter(True))
+        stats = neat.StatisticsReporter()
+        p.add_reporter(stats)
+        p.add_reporter(neat.Checkpointer(5))
+
+        # Run for up to 50 generations.
+        #print('now running for winner step')
+        winner = p.run(gameplay_eval, 10)
+
+        print('\nBest genome:\n{!s}'.format(winner))
+
+        # show final stats
+        #print(pop.statistics.best_genome())
+        return winner
 
 
 parser = argparse.ArgumentParser(description='A tutorial of argparse!')
 parser.add_argument("-h", required = False, default =True, help='trian the net in Headless mode')
 parser.add_argument('-c', required=True, help='path of the config file')
+parser.add_arugment('-p', required = False, default = False, help = 'parallelize the workload')
 
 args = parser.parse_args()
 h = args.h
+config_path = args.c
+is_parallel = args.p
 
 if __name__ == "__main__":
     winner = train_ai(config_path)
