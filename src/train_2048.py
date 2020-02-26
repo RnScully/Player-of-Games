@@ -85,7 +85,7 @@ def score_capper(cumulative_empties,game):
         Returns: capped_score, a float less than one. 
         '''
         
-        score = game.score
+        
         
         biggest = game.board.max()
         
@@ -97,8 +97,10 @@ def score_capper(cumulative_empties,game):
             board_management = 0 
         
         
-        
-        score_points = (-1/np.log(game.score))+1
+        if game.score > 0:
+            score_points = (-1/np.log(game.score))+1
+        else:
+            score_points = 0
         
         if biggest > 64:
             best_tile = best_tile_points[biggest]
