@@ -84,7 +84,7 @@ def score_capper(cumulative_empties,game):
         
         best_tile_points = dict({128: 0.05, 256: 0.1, 512: 0.15, 1024: 0.2, 2048: 0.25, 4096: 0.3})
         
-        if cumulative_empties > 0: # if there were never any new empties, 
+        if cumulative_empties > 1: # if there were never any new empties, 
             board_management = (-1/(np.log(cumulative_empties)))+1 
         else:
             board_management = 0 
