@@ -54,8 +54,9 @@ node_add_prob           = 0.03
 node_delete_prob        = 0.005
 
 # network parameters
-num_hidden              = 0 # hidden nodes increase initial complexity, which causes the organism to 
-			    # settle into one early successful node. 
+num_hidden              = 0 
+# hidden nodes increase initial complexity, which causes the organism to 
+# settle into one early successful node. 
 num_inputs              = 16
 num_outputs             = 4
 
