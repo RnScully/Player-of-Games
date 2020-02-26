@@ -28,14 +28,21 @@ def ai_suggest_move(net, game, headless = False):
     valid_moves = game.valid_moves
    
     d = dict(zip(np.array(output)[valid_moves], np.array(values)[valid_moves]))
-    #print(np.array(['up','left', 'right', 'down'])[valid_moves])
-    #print(game.board) #testing prints
-    
     if len(d.keys()) == 0:
         #print('ai_suggest_move is out of possible moves')
         game.game_over = True #game is over
         return  -1
-    move = d.get(max(d.keys()))
+    
+    if max(output) in d.keys():
+        move = d.get(max(d.keys()))
+    else:
+        game.game_over = True #game is over because this setting does not allow invaild moves:
+        return  -1
+    #print(np.array(['up','left', 'right', 'down'])[valid_moves])
+    #print(game.board) #testing prints
+    
+    
+    
     
     
     if headless == False:
@@ -84,7 +91,7 @@ def score_capper(cumulative_empties,game):
         
         best_tile_points = dict({128: 0.05, 256: 0.1, 512: 0.15, 1024: 0.2, 2048: 0.25, 4096: 0.3})
         
-        if cumulative_empties > 1: # if there were never any new empties, 
+        if cumulative_empties > 1  : # if there were never any new empties, 
             board_management = (-1/(np.log(cumulative_empties)))+1 
         else:
             board_management = 0 
@@ -101,10 +108,12 @@ def score_capper(cumulative_empties,game):
         return best_tile +0.2*score_points+0.5*board_management
 
 
+
+
 def gameplay_eval(genomes, config):
     '''
     a method which will determine how good the AI is doing on the game. 
-     
+    
     '''
     
     for genome_id, genome in genomes:
@@ -112,7 +121,7 @@ def gameplay_eval(genomes, config):
         net = neat.nn.RecurrentNetwork.create(genome, config)
 
         #have an AI try the game, record its score metrics. 
-        game = Game2048(ai = True, headless = True)
+        game = Game2048(ai = True, headless = True, strict = True)
         while game.game_over == False:
             last_board = game.board
             last_score = game.score
@@ -129,7 +138,7 @@ def gameplay_eval(genomes, config):
             new_board = game.board
             updated_score = game.score
             c_empties += empties_state(last_board, new_board)
-                  
+                
             
         genome.fitness = score_capper(c_empties, game.score)
             
@@ -141,7 +150,7 @@ def parallel_eval(genome, config): #takes SINGLE GENOME!
     net = neat.nn.RecurrentNetwork.create(genome, config)
 
     #have an AI try the game, record its score metrics. 
-    game = Game2048(ai = True, headless = True)
+    game = Game2048(ai = True, headless = True, strict = True)
     while game.game_over == False:
         last_board = game.board
         last_score = game.score
@@ -154,6 +163,7 @@ def parallel_eval(genome, config): #takes SINGLE GENOME!
         game.get_move(ai_move = get_from_ai)
         valid = game.game_step()
         if valid == -1:
+            game.game_over = True
             continue
         new_board = game.board
         updated_score = game.score
@@ -164,7 +174,7 @@ def parallel_eval(genome, config): #takes SINGLE GENOME!
     return fitness
 
 
-def train_ai(config_path,num_generations, parallel = False):
+def train_ai(config_path,num_generations, parallel = False, run_strict = False):
     """
     runs the NEAT algorithm to train a neural network to play 2048
     :param config_file: location of config file
