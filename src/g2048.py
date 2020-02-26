@@ -4,7 +4,7 @@ import time, sys
 from IPython.display import clear_output
 
 class Game2048():
-    def __init__(self, headless = False, ai = False):
+    def __init__(self, headless = False, ai = False, strict = False):
         
         self.board = np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
         self.add_tile() #initilaizes the board with a tile added. 
@@ -15,6 +15,7 @@ class Game2048():
         self.headless = headless
         self.ai = ai
         self.valid_moves = [True, True, True, True]
+        self.strict = strict
 
     def get_move(self,ai_move=None):
         """
@@ -309,6 +310,19 @@ class Game2048():
     def game_step(self):
         '''
         a method which will step through one turn of 2048's gameplay loop, made to give the AI easier handles. 
+        Attributes
+        strict (bool) : True settings will end game if an invalid move has been made
+        Returns 
+        (-1): if move is invalid, game step will pass out a -1. 
+
+        Updates
+        self.valid_moves
+        self.game_over
+        self.current_move
+
+        Calls:
+        slide_right(), slide_left(), up() and down() to make moves
+        turn_handling() to progress the turn. 
         '''
         
         completed_move = False 
@@ -329,6 +343,8 @@ class Game2048():
                     self.board = is_valid
                     completed_move = True
                 else:
+                    if self.strict == True:
+                        self.game_over = True
                     self.current_move = None
                     self.valid_moves[2] = False #updates the valid moves to tell the AI it can't keep retrying that. 
                     return -1
@@ -339,7 +355,8 @@ class Game2048():
                     self.board = is_valid
                     completed_move = True
                 else:
-                    
+                    if self.strict == True:
+                        self.game_over = True
                     self.current_move = None
                     self.valid_moves[3] = False #updates the valid moves to tell the AI it can't keep retrying that. 
                     return -1
@@ -350,6 +367,8 @@ class Game2048():
                     self.board = is_valid
                     completed_move = True
                 else:
+                    if self.strict == True:
+                        self.game_over = True
                     self.current_move = None
                     self.valid_moves[1] = False #updates the valid moves to tell the AI it can't keep retrying that. 
                     return -1
@@ -360,6 +379,8 @@ class Game2048():
                     self.board = is_valid
                     completed_move = True
                 else:
+                    if self.strict == True:
+                        self.game_over = True
                     self.current_move = None
                     self.valid_moves[0] = False #updates the valid moves to tell the AI it can't keep retrying that. 
                     return -1
