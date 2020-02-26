@@ -12,7 +12,8 @@ species_elitism      = 3
 
 [DefaultReproduction]
 elitism            = 2
-survival_threshold = 0.6  #ratio of who gets to breed. 
+survival_threshold = 0.6 
+ #ratio of who gets to breed. 
 
 [DefaultGenome]
 # node activation options
