@@ -24,3 +24,7 @@ The titular goal of the game is to build a tile valued 2048, though a human can 
 # Process
 
 - Build a representation of the game in simple python that can run headlessly
+
+
+# Further steps: 
+update QLearner's suggest move step to debuff memory of invalid moves in non-strict mode. 
