@@ -23,7 +23,16 @@ def ai_suggest_move(net, game, headless = False):
     -1 (int): a marker that will tell the game that the AI can't make any more moves and to trigger end-game. 
     
     '''
-    output = net.activate(game.board.ravel())
+
+    tokenized = np.array([])
+    for x in game.board.ravel():
+        blank = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        if x != 0:
+            blank[int(np.log2(x))] = 1
+        tokenized = np.append(tokenized, blank)
+
+    output = net.activate(tokenized)
+
     values = [2, 4, 6, 8]
     valid_moves = game.valid_moves
    
@@ -33,14 +42,16 @@ def ai_suggest_move(net, game, headless = False):
         game.game_over = True #game is over
         return  -1
     
-    if max(output) in d.keys():
-        move = d.get(max(d.keys()))
+    if game.strict == True:
+        if max(output) in d.keys(): #if the suggested move is not in valid_moves, it wont be in d, and so this will be negative, and the game will end
+            move = d.get(max(d.keys()))
+            return move
+        else:
+            game.game_over = True #game is over because this setting does not allow invaild moves:
+            return  -1
     else:
-        game.game_over = True #game is over because this setting does not allow invaild moves:
-        return  -1
-    #print(np.array(['up','left', 'right', 'down'])[valid_moves])
-    #print(game.board) #testing prints
-    
+        move = d.get(max(d.keys())) #takes the next best move that is valid
+        return move
     
     
     
