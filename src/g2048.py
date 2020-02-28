@@ -9,9 +9,10 @@ class Game2048():
         self.board = np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
         self.add_tile() #initilaizes the board with a tile added. 
         self.score = 0
-        self.current_move = None
+        self.current_move = None # updated by get_move(), takes numerical inputs
         self.game_over = False
         self.history = []
+        self.history.append(self.board.ravel())
         self.headless = headless
         self.ai = ai
         self.valid_moves = [True, True, True, True]
@@ -345,6 +346,7 @@ class Game2048():
                 else:
                     if self.strict == True:
                         self.game_over = True
+                        
                     self.current_move = None
                     self.valid_moves[2] = False #updates the valid moves to tell the AI it can't keep retrying that. 
                     return -1
@@ -388,6 +390,8 @@ class Game2048():
             else:
                 print('something has gone wrong in game_step!')
                 print(self.current_move)
+                print(self.valid_moves)
+                break
             self.valid_moves = [True, True, True, True]
             self.turn_handling()
 
