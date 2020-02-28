@@ -3,39 +3,83 @@
 from g2048 import Game2048
 import numpy as np
 
+from g2048 import Game2048
+from train_2048 import empties_state
+import numpy as np
+
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 from tensorflow.keras.optimizers import Adam
-
 from tensorflow.keras.utils import to_categorical
 
-class RL_Player():
-    def __init__(self):
-            self.reward = 0
-            self.gamma = 0.9
-            # self.dataframe = pd.DataFrame()
-            self.short_memory = np.array([])
-            self.agent_target = 1
-            self.agent_predict = 0
-            self.learning_rate = 0.0005
+import matplotlib.pyplot as plt
+
+class RL_Player(model = None):
+    def __init__(self, reward_depth = 5):
+        self.reward = 0
+        self.gamma = 0.9
+        # self.dataframe = pd.DataFrame()
+        self.short_memory = np.array([])
+        self.target = []
+        self.X = []
+        self.reward_depth = reward_depth
+        if model = None:
             self.model = self.neural_net()
-            #self.model = self.network("weights.hdf5")
-            self.epsilon = 0
-            self.actual = []
-            self.memory = []
+        else:
+            self.model = keras.models.load_model(model)
             
-    
+        self.bad_move = 0
+        self.memory = [[0,0,0,0,0] for _ in range(self.reward_depth)]
+            
+            
+    def tokenize_board(self, board):
+        '''method takes the game board and tokenizes all the arrays into 16 other arrays for if there's a 2, a 4, an 8, etc in a location to just a 1. hopefully...makes matching better
+        Attributes 
+        game( game2084 object): the game. 
+        Returns
+        tokenized 256x1 tokenization of all* possible game states. 
+        
+        * does not account for the 136k tile. I just..don't expect to need that. Frankly, 16k and 32k seem a reach
+        '''
+        tokenized = np.array([])
+        
+        for x in board.ravel():
+            blank = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+            if x != 0:
+                blank[int(np.log2(x))] = 1
+            tokenized = np.append(tokenized, blank)
+        return tokenized
+
+     def clear_memory(self, game):
+        if game.game_over == True:
+            self.memory = [[0,0,0,0,0] for _ in range(self.reward_depth)]
 
     def ai_suggest_move(self, game):
-        board = game.board.ravel
-        pred= self.model.predict(game.board.ravel().reshape(1,-1))
+        '''
+        method which takes the game and the model (the ai we are training) and suggests a move.
+        
+        Attributes:
+        Game(g2048 object): the game the AI is currently playing
+        
+        '''
+        self.bad_move = 0
+        board = game.board
+        
+        # tokenize_board block takes the game board and tokenizes all the arrays into 16 other arrays for if there's a 2, a 4, an 8, etc in a location to just a 1. hopefully...makes matching better
+
+        tokenized = self.tokenize_board(board) 
+        
+        pred= self.model.predict(tokenized.reshape(1,-1))
         output = [i for i in pred[0]]
         
         values = [2, 4, 6, 8]
         valid_moves = game.valid_moves
+        
+        
 
         d = dict(zip(np.array(output)[valid_moves], np.array(values)[valid_moves]))
+        
         if len(d.keys()) == 0:
             #print('ai_suggest_move is out of possible moves')
             game.game_over = True #game is over
@@ -44,22 +88,136 @@ class RL_Player():
         if game.strict == True:
             if max(output) in d.keys(): #if the suggested move is not in valid_moves, it wont be in d, and so this will be negative, and the game will end
                 move = d.get(max(d.keys()))
+                self.memory.pop(0)
+                output.append(move)
+                self.memory.append(np.array(output).reshape(1,-1))
                 return move
             else:
                 game.game_over = True #game is over because this setting does not allow invaild moves:
                 return  -1
         else:
+            if max(output) not in d.keys():
+                self.bad_move = -1 #triggers bad move if the thing has to take the next best move. 
+            
             move = d.get(max(d.keys())) #takes the next best move that is valid
+            self.memory.pop(0)
+            output.append(move)
+            self.memory.append(np.array(output).reshape(1,-1))
+            
             return move
-    
-    def give_reward(self):
-        old_board = game.board()
-        new_board = game.get_move(self.ai_suggest_move(self.model, game))
+
+    def calc_reward(self, game, move):
+        '''
+        Runs right after AI suggest move
+        checks if reinforcement is merited after the last move, if so, updates the fit of model. 
+        Attributes
+        game (Game2048 object)
+        move (int): int passed from ai_suggest_move()
         
+        Updates reward
+        
+        '''
+        self.reward = 0
+
+        
+        ## get old board and new board by checking move against the game's built in moves. 
+        old_board = game.board
+        
+        if move == 2: 
+            next_board = game.slide_down()
+        elif move == 4:
+            next_board = game.slide_left()
+        elif move == 6:
+            next_board = game.slide_right()
+        elif move == 8:
+            next_board = game.slide_up()
+        else:
+            next_board = np.array([[ 1,  1,  1,  1],  #simple full board for end-game board state comparison. 
+                                   [ 1,  1, 1, 1],
+                                    [ 1, 1, 1,  1],
+                                   [ 1,  1,  1,  1]])
+        
+        tiles_combined = empties_state(old_board, next_board)
+        
+        
+        big_tiles = dict({32:6, 64: 6, 128: 10, 256: 10, 512: 20, 1024: 30, 2048: 100, 4096: 1000})
+        if np.amax(old_board) < np.amax(next_board): # checks to see if the bot has combined tiles or gotten a big one. 
+            if np.amax(game.board) in big_tiles.keys():
+                self.reward += big_tiles[np.amax(game.board)]*2
+                print('big tiles')
+            else: 
+                self.reward +=4 
+                print('biggest tile yet')
+        
+        
+        
+        if tiles_combined > 1:
+            self.reward += tiles_combined*2
+            print('board managment bonus!')
+        
+        elif self.bad_move == -1 and len(game.history) > 10: # doesn't start penalizing for bad moves untill after a few turns of play
+            self.reward = -2
+            print('invalid move')
+            
+        if game.game_over == True:
+            self.reward = -10
+            print('game over penalty')
+        self.bad_move == 0 # Reset bad move!
+        old_score = game.score
+    
+     def give_reward(self, game):
+        '''if there is a reward, this will get the game history and the memory of the outputs, multiply the outputs by the reward and its time discount
+        
+        '''
+        
+        
+        if self.reward != 0:
+            #print('hey, the reward is this {}, so triggering reward steps'.format(self.reward))
+            if len(game.history) <= self.reward_depth:
+                h = game.history
+                m = self.memory[-len(game.history):] #indexes into the last last point in memory attached to the current game.
+            else:
+                h = game.history[-(1+self.reward_depth):-1] #index into these arrays from the back, up to a height of however far the depth is
+                m = self.memory[-(1+self.reward_depth):] # memory is np array, game.history is list
+            #get moves 
+            
+            
+            values = [2, 4, 6, 8]
+            discount = 1
+            self.target = []
+            for items in m:  ##make mem shotened to the length you want, currently its five. 
+
+                move = items[0][-1]
+                items_short = items[0][:4]
+                k = values.index(move)
+                #value in array that corresponds to the move taken
+                
+                if self.reward*discount > 1:
+                    items_short[k] = items_short[k]*self.reward*discount
+                elif self.reward < 0:
+                    items_short[k] = items_short[k]*self.reward*discount
+                else:
+                    items_short[k] = items_short[k]*1.05
+                self.target.append(items_short)
+                discount -=(1/self.reward_depth)
+                
+                
+            #$ !! tokenize the items in h
+            print('current reward is {} '.format(self.reward))
+            self.X =[self.tokenize_board(i) for i in h] #.reshape tokenize_board(i) as (1,-1) was removed
+            
+           
+            self.model.fit(np.array(self.X),np.array(self.target))
     def neural_net(self, weights = None):
 
         model = Sequential()
-        model.add(Dense(32, activation='relu', input_shape= (16,)  ))
+        model.add(Dense(128, activation='relu', input_dim = 256 ))
+        model.add(Dropout(0.3))
+        
+        model.add(Dense(64, activation='relu'))
+        model.add(Dropout(0.3))
+        
+        model.add(Dense(64, activation='relu'))
         model.add(Dropout(0.3))
         
         model.add(Dense(32, activation='relu'))
@@ -73,7 +231,5 @@ class RL_Player():
         
         model.compile(loss='mse', optimizer=opt)
 
-        if weights:
-            model.load_weights
         return model
         
