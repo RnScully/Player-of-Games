@@ -10,7 +10,7 @@ import multiprocessing
 from tools import save_model
 
 
-def ai_suggest_move(net, game, headless = False):
+def ai_suggest_move(net, game, headless = False, tokenize = False):
     '''
     a method which has the ai suggest a move in 2048 and trys the move. If it is not 
     valid, valid_moves is updated in the game. this method then uses valid_moves to filter out invalid moves from the Ai's suggestion. 
@@ -23,13 +23,14 @@ def ai_suggest_move(net, game, headless = False):
     -1 (int): a marker that will tell the game that the AI can't make any more moves and to trigger end-game. 
     
     '''
-
+    
     tokenized = np.array([])
-    for x in game.board.ravel():
-        blank = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-        if x != 0:
-            blank[int(np.log2(x))] = 1
-        tokenized = np.append(tokenized, blank)
+    if tokenize ==True:
+        for x in game.board.ravel():
+            blank = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+            if x != 0:
+                blank[int(np.log2(x))] = 1
+            tokenized = np.append(tokenized, blank)
 
     output = net.activate(tokenized)
 

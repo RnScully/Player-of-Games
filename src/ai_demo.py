@@ -6,7 +6,7 @@ from train_2048 import ai_suggest_move
 import pickle
 import argparse
 
-def display_skills(saved_ai, config_path):
+def display_skills(saved_ai, config_path, tokenized = False):
     '''
     A function that will have one AI play the game and display moves
     '''
@@ -23,7 +23,7 @@ def display_skills(saved_ai, config_path):
             last_score = game.score
             
             
-            get_from_ai = ai_suggest_move(ai, game, headless = False) #must be int 2, 4, 6 or 8, related to moves down, right, left and up respectively
+            get_from_ai = ai_suggest_move(ai, game, headless = False, tokenize = tokenized) #must be int 2, 4, 6 or 8, related to moves down, right, left and up respectively
             game.get_move(ai_move = get_from_ai)
             game.game_step()
             
