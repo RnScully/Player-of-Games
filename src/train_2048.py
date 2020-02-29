@@ -31,6 +31,8 @@ def ai_suggest_move(net, game, headless = False, tokenize = False):
             if x != 0:
                 blank[int(np.log2(x))] = 1
             tokenized = np.append(tokenized, blank)
+    else:
+        tokenized = game.board.ravel()
 
     output = net.activate(tokenized)
 
