@@ -155,12 +155,13 @@ class Game2048():
                     new_row = [0,0,row[0],row[1]]
 
             elif len(row)==3:
-                if row[0]==row[1]:
-                    new_row = [0,0, row[0]+row[1],row[2]]
-                    inner_score.append(row[0]+row[1])
-                elif row[1]==row[2]:
+                if row[1]==row[2]:
                     new_row = [0,0,row[0],row[1]+row[2]]
                     inner_score.append(row[1]+row[2])
+                elif row[0]==row[1]:
+                    new_row = [0,0, row[0]+row[1],row[2]]
+                    inner_score.append(row[0]+row[1])
+                
                     
                 else:
                     new_row = [0,row[0],row[1],row[2]]
@@ -169,16 +170,18 @@ class Game2048():
                     if row[0] == row[1] and row[2] == row[3]:
                         new_row = [0,0, row[0]+row[1], row[2]+row[3]]    
                         inner_score.append(row[0]+row[1])
-                        inner_score.append(row[2]+row[3])  
-                    elif row[0]== row[1]:
-                        new_row = [0,row[0]+row[1],row[2],row[3]]
-                        inner_score.append(row[0]+row[1])
+                        inner_score.append(row[2]+row[3]) 
+                    elif row[2] == row[3]:
+                        new_row = [0,row[0],row[1],row[2]+row[3]]
+                        inner_score.append(row[2]+row[3]) 
                     elif row[1] == row[2]:
                         new_row = [0,row[0],row[1]+row[2],row[3]]
                         inner_score.append(row[1]+row[2])
-                    elif row[2] == row[3]:
-                        new_row = [0,row[0],row[1],row[2]+row[3]]
-                        inner_score.append(row[2]+row[3])
+                    elif row[0]== row[1]:
+                        new_row = [0,row[0]+row[1],row[2],row[3]]
+                        inner_score.append(row[0]+row[1])
+                    
+                    
                     else:
                         new_row = row
 
