@@ -6,7 +6,40 @@ from train_2048 import ai_suggest_move
 import pickle
 import argparse
 
-def display_skills(saved_ai, config_path, tokenized = False):
+def demo_QR_learner(ai_path, headless = True):
+    '''
+    function that runs the AI without training it for showcasing and metrics of the AI at specific training levels. 
+    Attributes 
+    ai_path (str): path of the ai model
+    Returns
+    tuple (biggest tile reached, score of game)
+    '''
+    agent = RL_Player(model = ai_path, demo = True)
+    game = Game2048(ai = True, headless = False, strict = False)
+
+    
+
+    while game.game_over == False:
+        last_board = game.board
+        #print('Game Over: {}'.format(game.game_over))
+
+        move = agent.ai_suggest_move(game)
+        if headless == False:
+            game.show_board()
+        #agent.calc_reward(game, move)
+
+        #agent.give_reward(game)
+
+        game.get_move(move)
+        game.game_step()
+        if headless == False:
+            print_move(move)
+            print('')
+
+        new_board = game.board
+    return game.board.max(), game.score
+
+def display_neat_skills(saved_ai, config_path, tokenized = False):
     '''
     A function that will have one AI play the game and display moves
     '''
@@ -98,11 +131,14 @@ def random_play(num_runs):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='A tutorial of argparse!')
-    parser.add_argument("-m", required = True, help='model to display')
+    parser.add_argument("-m", required = True, help='model to display, Q for Q learner N for NEAT')
     parser.add_argument('-c', required = True, help = 'neat-python config file is needed to rebuild the ai from the save')
 
     args = parser.parse_args()
     config_path = args.c
-    saved_ai = args.m
+    which_ai = args.m
 
-    display_skills(saved_ai, config_path)
+    if which ai == N:
+        display_neat_skills(saved_ai, config_path)
+    else:
+       demo_QR_learner()
