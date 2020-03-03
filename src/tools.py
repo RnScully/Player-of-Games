@@ -13,6 +13,15 @@ import graphviz
 from sklearn.metrics import confusion_matrix
 
 def update_progress(progress):
+    '''
+    function whcih shows how far you are through a loop
+    
+    Attributes
+    progress (float):  index of(current step) / len(iterable)
+    
+    Returns: 
+    a progress bar
+    '''
     bar_length = 40
     if isinstance(progress, int):
         progress = float(progress)
@@ -34,9 +43,7 @@ def save_model(model,name):
     path = 'models/'
     pickle.dump(model, open(path+name+file_ext, 'wb'))
 
-def extract_ngrams(data, num):
-    n_grams = ngrams(nltk.word_tokenize(data), num)
-    return [ ' '.join(grams) for grams in n_grams]
+
 
 def draw_net(config_path, genome, view=False, filename=None, node_names=None, show_disabled=True, prune_unused=False,
              node_colors=None, fmt='svg'):

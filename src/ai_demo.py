@@ -6,7 +6,7 @@ from train_2048 import ai_suggest_move
 import pickle
 import argparse
 
-def demo_QR_learner(ai_path, headless = True):
+def demo_QR_learner(ai_path, sleep_time, headless = True):
     '''
     function that runs the AI without training it for showcasing and metrics of the AI at specific training levels. 
     Attributes 
@@ -37,11 +37,16 @@ def demo_QR_learner(ai_path, headless = True):
             print('')
 
         new_board = game.board
+        time.sleep(sleep_time)
+
     return game.board.max(), game.score
 
 def display_neat_skills(saved_ai, config_path, tokenized = False):
     '''
     A function that will have one AI play the game and display moves
+    Attributes
+    saved_ai (str): path to python-neat genome you're running
+    config_path (str): path to python-neat
     '''
     
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -60,7 +65,9 @@ def display_neat_skills(saved_ai, config_path, tokenized = False):
             game.get_move(ai_move = get_from_ai)
             game.game_step()
             
-            #time.sleep(.4) #if you want it in realtime. For checking to see if is working, you want it all at once
+            time.sleep(sleep_time) #if you want it in realtime. For checking to see if is working, you want it all at once
+
+
 def handle_random_move(game, headless = False):
     '''
     a method which has the ai suggest a move in 2048 and trys the move. If it is not 
@@ -133,12 +140,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='A tutorial of argparse!')
     parser.add_argument("-m", required = True, help='model to display, Q for Q learner N for NEAT')
     parser.add_argument('-c', required = True, help = 'neat-python config file is needed to rebuild the ai from the save')
-
+    parser.add_argument('-s', default = .4, help = "how many seconds to wait between moves")
+ 
     args = parser.parse_args()
     config_path = args.c
     which_ai = args.m
+    sleep_time = args.s
 
     if which ai == N:
-        display_neat_skills(saved_ai, config_path)
+        display_neat_skills(saved_ai, config_path, sleep_time)
     else:
        demo_QR_learner()
