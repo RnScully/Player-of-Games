@@ -65,11 +65,11 @@ A you can see, the Neat evolvers did get better than random play in its first th
 
 I then switched to the Q-Learner, and trained it for 2000 games. This is...much longer than it ought take to reach this level of fitness:
 
-![Best tiles reached in 100 trials by Q-Learner at 500, 1000, 1500, and 2000 games played](https://github.com/RnScully/Player-of-Games/blob/master/img/best%20tile%20reached%20by%20Q-Learner%20Bar.png)
+![Best tiles reached in 100 trials by Q-Learner at 500, 1000, 1500, and 2000 games played](https://github.com/RnScully/Player-of-Games/blob/master/img/bbest_tile_atgames_playedr.png)
 
 I charted the Q-Learner's improvement over time, and feel like there's likely further improvements to be made with further gameplay, but expect that the biggest problem is a poorly designed reward system. 
 
-![Rolling average of 20 game scores as Q-Learner was trained](https://github.com/RnScully/Player-of-Games/blob/master/img/Q-Learning%20Score%20per%20Games%20Played.png)
+![Rolling average of 20 game scores as Q-Learner was trained](https://github.com/RnScully/Player-of-Games/blob/master/img/Game%20Score%20per%20100%20tries%20at%20training%20level.png)
 
 
 # Further steps: 
