@@ -10,14 +10,18 @@ import multiprocessing
 from tools import save_model
 
 
+
 def ai_suggest_move(net, game, headless = False, tokenize = False):
     '''
     a method which has the ai suggest a move in 2048 and trys the move. If it is not 
     valid, valid_moves is updated in the game. this method then uses valid_moves to filter out invalid moves from the Ai's suggestion. 
     I have some concerns about how this will affect the learning of the game, but can't come up with a better way to teach this nn not to TRY THINGS THAT ARE ILLEGAL. dumb boy. he's a friend, though.
     
-    Attributes:
-    
+    Parameters:
+    net (python-NEAT nueralnet) the ai that is being asked to predict the best move
+    game (g2048 object) game that is currently being played
+    headless (bool): True runs the game without showing anyof the suggestions, False shows the moves
+    tokenize (bool): True tokenizes the board to 256 inputs, False feeds just the raveled array. 
     Returns
     move(int): a 2, 4, 6, or an 8 that maps to move down, move left, move right, and move up respectively. 
     -1 (int): a marker that will tell the game that the AI can't make any more moves and to trigger end-game. 
@@ -75,10 +79,11 @@ def empties_state(last_board, new_board):
     determines how many tiles the last move cleared. 
     Incentivises making moves that clear tiles so that
     maximizing open space will give heightened fitness. 
-    Attributes:
+    +++++++++++
+    Parameters:
     last_board (np.array): board from previous game state
     new_board (np.array): board after move was made
-
+    ++++++++++
     Returns:
     int or 0: if new board is better (more open space) than old board, it gives the number of tiles minimized. 
     
@@ -90,38 +95,38 @@ def empties_state(last_board, new_board):
         return 0
 
 def score_capper(cumulative_empties,game):
-        '''
-        a function that takes constantly growing scores and fits them to a curve assymptoting at 1. 
-        Attributes
-        y(any number)
-        x(any number)
-        
-        Returns: capped_score, a float less than one. 
-        '''
-        
-        
-        
-        biggest = game.board.max()
-        
-        best_tile_points = dict({128: 0.05, 256: 0.1, 512: 0.15, 1024: 0.2, 2048: 0.25, 4096: 0.3})
-        
-        if cumulative_empties > 1  : # if there were never any new empties, 
-            board_management = (-1/(np.log(cumulative_empties)))+1 
-        else:
-            board_management = 0 
-        
-        
-        if game.score > 0:
-            score_points = (-1/np.log(game.score))+1
-        else:
-            score_points = 0
-        
-        if biggest > 64:
-            best_tile = best_tile_points[biggest]
-        else:
-            best_tile = 0
+    '''
+    a function that takes constantly growing scores and fits them to a curve assymptoting at 1. 
+    Attributes
+    y(any number)
+    x(any number)
+    
+    Returns: capped_score, a float less than one. 
+    '''
+    
+    
+    
+    biggest = game.board.max()
+    
+    best_tile_points = dict({128: 0.05, 256: 0.1, 512: 0.15, 1024: 0.2, 2048: 0.25, 4096: 0.3})
+    
+    if cumulative_empties > 1  : # if there were never any new empties, 
+        board_management = (-1/(np.log(cumulative_empties)))+1 
+    else:
+        board_management = 0 
+    
+    
+    if game.score > 0:
+        score_points = (-1/np.log(game.score))+1
+    else:
+        score_points = 0
+    
+    if biggest > 64:
+        best_tile = best_tile_points[biggest]
+    else:
+        best_tile = 0
 
-        return best_tile +0.2*score_points+0.5*board_management
+    return best_tile +0.2*score_points+0.5*board_management
 
 
 
@@ -162,6 +167,17 @@ def gameplay_eval(genomes, config):
             
                  
 def parallel_eval(genome, config): #takes SINGLE GENOME!
+    '''
+    runs score_capper (the fitness evaluatoin metric) per genome to feed into python-neat's request for a different fitness evaluation for using parallel cores, as opposed to the single-threaded version, which runs each member of a genome in sequence
+    ++++++++++
+    Parameters
+    genome (python-neat object) a single member of a genome, as noted above, rather than the genome which then runs th 
+    ++++++++++
+    Returns
+    fitness (float): metric developed in score_capper()
+    
+    '''
+
     c_empties = 0
     net = neat.nn.RecurrentNetwork.create(genome, config)
 
@@ -193,8 +209,15 @@ def parallel_eval(genome, config): #takes SINGLE GENOME!
 def train_ai(config_path,num_generations, parallel = False, run_strict = False):
     """
     runs the NEAT algorithm to train a neural network to play 2048
-    :param config_file: location of config file
-    :return: winnner (NEAT genome file) best genome that the algorithm has developed 
+    ++++++++
+    paramaters 
+    config_file (str): path to python-NEAT config file for how the ai evolves
+    num_generations (int): the number of generations to run these
+    parallel (bool): False will run the program on single core, True will run program on one less core than the machine's total cores
+    ++++++++
+    return: 
+    winnner (NEAT genome file) best induvudual that the algorithm has developed 
+    
     """
     
     if parallel == True:

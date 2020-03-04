@@ -20,7 +20,17 @@ class Game2048():
 
     def get_move(self,ai_move=None):
         """
-        Sets a players input to self.current_move.
+        asks a player for input for a move, or sets ai=move as the move.
+        ++++++++++
+        Parameters
+        ai_move (int, a 2, 4, 6, or an 8 or else it will break): move that the ai has predicted is best
+        ++++++++++
+        Returns
+        Nothing
+        ++++++++++
+        Updates
+        self.current_move (int): the move to make in the current turn. 
+
         """
         if self.ai == False:
             print('4:slide left, 8:slide up, 6: slide right, 2:slide down, /n q: quit')
@@ -34,7 +44,7 @@ class Game2048():
         displays the current gameboard. ought work in-place to make game interactive without re-calling cells, but...that's not yet working. 
         '''
 
-        #clear_output(wait = True)
+        clear_output(wait = True)
         print(self.board)
 
     
@@ -42,6 +52,9 @@ class Game2048():
     def add_tile(self):
         ''' adds a new tile either a 2 or 4 with 80% chance of a 2 in a random empty tile. 
         if game board is full, add_tile will call endgame handling methods. 
+        +++++++
+        Returns
+        self.score if the game is over, return the score. 
         '''
         empty_tiles = np.where(self.board ==0)
         if len(empty_tiles[0]) == 0 :
@@ -68,11 +81,11 @@ class Game2048():
     def slide_left(self)        :
         ''' slides all tiles to the left, ignoring 0s and merging all duplicates, records score as the sum of all merges. 
         +++++++++++
-        Attributes:
+        Parameters
             self.board (np.array): the 4x4 gameboard
         +++++++++++
         Returns:
-            Nothing
+            new_board (np.array): the next 4x4 gameboard 
         +++++++++++
         Updates
         self.score (int): sum of all merges done in the method added to self.score
@@ -129,11 +142,11 @@ class Game2048():
     def slide_right(self):
         ''' slides all tiles to the right, ignoring 0s and merging all duplicates, records score as the sum of all merges. 
         +++++++++++
-        Attributes:
+        Parameters:
             self.board (np.array): the 4x4 gameboard
         +++++++++++
         Returns:
-            Nothing
+            new_board (np.array): the next 4x4 gameboard 
         +++++++++++
         Updates
         self.score (int): sum of all merges done in the method added to self.score
@@ -193,11 +206,11 @@ class Game2048():
     def slide_down(self):
         ''' slides all tiles down, ignoring 0s and merging all duplicates, records score as the sum of all merges. 
         +++++++++++
-        Attributes:
+        Parameters
             self.board (np.array): the 4x4 gameboard
         +++++++++++
         Returns:
-            Nothing
+            new_board (np.array): the next 4x4 gameboard 
         +++++++++++
         Updates
         self.score (int): sum of all merges done in the method added to self.score
@@ -254,11 +267,11 @@ class Game2048():
     def slide_up(self):
         ''' slides all tiles to the right, ignoring 0s and merging all duplicates, records score as the sum of all merges. 
         +++++++++++
-        Attributes:
+        Parameters
             self.board (np.array): the 4x4 gameboard
         +++++++++++
         Returns:
-            Nothing
+            new_board (np.array): the next 4x4 gameboard 
         +++++++++++
         Updates
         self.score (int): sum of all merges done in the method added to self.score
@@ -314,11 +327,11 @@ class Game2048():
     def game_step(self):
         '''
         a method which will step through one turn of 2048's gameplay loop, made to give the AI easier handles. 
-        Attributes
-        strict (bool) : True settings will end game if an invalid move has been made
+        ++++++++++
+        
         Returns 
         (-1): if move is invalid, game step will pass out a -1. 
-
+        ++++++++++
         Updates
         self.valid_moves
         self.game_over

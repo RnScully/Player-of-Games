@@ -9,7 +9,7 @@ import numpy as np
 
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
+from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, 
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import to_categorical
 
@@ -40,10 +40,12 @@ class RL_Player():
     
     def tokenize_board(self, board):
         '''method takes the game board and tokenizes all the arrays into 16 other arrays for if there's a 2, a 4, an 8, etc in a location to just a 1. hopefully...makes matching better
-        Attributes 
+        ++++++++++
+        Parameters 
         game( game2084 object): the game. 
+        ++++++++++
         Returns
-        tokenized 256x1 tokenization of all* possible game states. 
+        tokenized (np.array): 256x1 tokenization of all* possible game states. 
         
         * does not account for the 136k tile. I just..don't expect to need that. Frankly, 16k and 32k seem a reach
         '''
@@ -57,6 +59,20 @@ class RL_Player():
         return tokenized
     
     def clear_memory(self, game):
+    '''
+    method which clears the agent's memory when the game ends
+    ++++++++++
+    Parameters
+    game(g2048 object): the game
+    ++++++++++
+    Updates
+    self.memory to: list of empty lists
+    self.long_memory to:empty list
+    self.oldest_mem to: int(0)
+    ++++++++++
+    Returns
+    None
+    '''
         if game.game_over == True:
             self.memory = [[] for _ in range(self.reward_depth)]
             self.long_memory = []
@@ -65,10 +81,15 @@ class RL_Player():
     def ai_suggest_move(self, game):
         '''
         method which takes the game and the model (the ai we are training) and suggests a move.
-        
-        Attributes:
+        +++++++++++
+        Parameters:
         Game(g2048 object): the game the AI is currently playing
-        
+        +++++++++++
+        Return
+        move (int), one of 2, 4, 6, 8 or -1, the move that the ai predicts is the best outcome, or something randomly chosen from valid moves. 
+        Updates:
+        self.memory (takes one off the begenning and adds one to the end. )
+        self.long_memory, adds to agent's memory of whole game
         '''
         self.bad_move = 0
         board = game.board
@@ -85,7 +106,7 @@ class RL_Player():
         
         
 
-        d = dict(zip(np.array(output)[valid_moves], np.array(values)[valid_moves])) # all valid moves
+        d = dict(ziAttributesp(np.array(output)[valid_moves], np.array(values)[valid_moves])) # all valid moves
         
         
         
@@ -132,11 +153,13 @@ class RL_Player():
         '''
         Runs right after AI suggest move
         checks if reinforcement is merited after the last move, if so, updates the fit of model. 
-        Attributes
+        ++++++++++
+        Parameters
         game (Game2048 object)
         move (int): int passed from ai_suggest_move()
-        
-        Updates reward
+        ++++++++++
+        Updates 
+        self.reward
         
         '''
         self.reward = 0
@@ -160,7 +183,7 @@ class RL_Player():
                                    [ 1,  1,  1,  1]])
         
         tiles_combined = empties_state(old_board, next_board)
-        
+        Attributes
         
         big_tiles = dict({32:6, 64: 6, 128: 10, 256: 10, 512: 20, 1024: 30, 2048: 100, 4096: 1000})
         if np.amax(old_board) < np.amax(next_board): # checks to see if the bot has combined tiles or gotten a big one. 
@@ -277,7 +300,7 @@ class RL_Player():
         '''
         a method which creates a neural net for the agent
         Returns:
-        model, a tensorflow nn
+        model, a tensorflow nueral net
         '''
 
         model = Sequential()

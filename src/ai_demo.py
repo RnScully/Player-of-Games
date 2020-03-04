@@ -6,13 +6,19 @@ from train_2048 import ai_suggest_move
 import pickle
 import argparse
 
-def demo_QR_learner(ai_path, sleep_time, headless = True):
+def demo_QR_learner(ai_path, sleep_time = 0, headless = True):
     '''
     function that runs the AI without training it for showcasing and metrics of the AI at specific training levels. 
-    Attributes 
+    ++++++++++
+    Parameters 
     ai_path (str): path of the ai model
+    sleep_time (float): how many seconds to wait between turns
+    headless (bool): whether or not to run the game in headless mode
+    ++++++++++
     Returns
-    tuple (biggest tile reached, score of game)
+    game.board.max() (int): best tile reached in game
+    game.score (int): final score
+    
     '''
     agent = RL_Player(model = ai_path, demo = True)
     game = Game2048(ai = True, headless = False, strict = False)
@@ -38,15 +44,21 @@ def demo_QR_learner(ai_path, sleep_time, headless = True):
 
         new_board = game.board
         time.sleep(sleep_time)
-
+    
     return game.board.max(), game.score
 
 def display_neat_skills(saved_ai, config_path, tokenized = False):
     '''
     A function that will have one AI play the game and display moves
-    Attributes
+    ++++++++++
+    Parameters
     saved_ai (str): path to python-neat genome you're running
     config_path (str): path to python-neat
+    tokenized (bool): wether to use a 16 feature game board(False) or a 256 feature tokenized game board. (True)
+    ++++++++++
+    Returns
+    game.board.max() (int): best tile reached in game
+    game.score (int): final score
     '''
     
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -66,16 +78,19 @@ def display_neat_skills(saved_ai, config_path, tokenized = False):
             game.game_step()
             
             time.sleep(sleep_time) #if you want it in realtime. For checking to see if is working, you want it all at once
-
+       
+    return game.board.max(), game.score
 
 def handle_random_move(game, headless = False):
     '''
     a method which has the ai suggest a move in 2048 and trys the move. If it is not 
     valid, valid_moves is updated in the game. this method then uses valid_moves to filter out invalid moves from the Ai's suggestion. 
     I have some concerns about how this will affect the learning of the game, but can't come up with a better way to teach this nn not to TRY THINGS THAT ARE ILLEGAL. dumb boy. he's a friend, though.
-    
-    Attributes:
-    
+    ++++++++++
+    Parameters:
+    game (g2048 object): game board
+    headless (bool): True tells the game to run headless, False shows the game moves
+    ++++++++++
     Returns
     move(int): a 2, 4, 6, or an 8 that maps to move down, move left, move right, and move up respectively. 
     -1 (int): a marker that will tell the game that the AI can't make any more moves and to trigger end-game. 
@@ -111,15 +126,26 @@ def handle_random_move(game, headless = False):
             print('slide up')
     return move
 
-def random_play(num_runs):
-    
+def random_play(num_runs, headless = True):
+    '''
+    A function wich runs the game using handle_random_move() to decide what the next move will be, simulates random play for graphs
+    ++++++++++
+    Parameters
+    num_runs (int): how many times you want to trial random play.
+    headless (bool):  True tells the game to run headless, False shows the game moves
+    ++++++++++
+    Returns
+    score (lst): list of final scores 
+    empties (lst): list of number of empties generated during each game
+    best_tiles (lst): list of best tiles reached in each game
+    '''
     
     scores = []
     best_tiles = []
     empties = []
     for _ in range(num_runs):
         empty = 0
-        game = Game2048(ai = True, headless = True)
+        game = Game2048(ai = True, headless = headless)
 
         while game.game_over == False:
 
@@ -134,7 +160,7 @@ def random_play(num_runs):
         best_tiles.append(game.board.max())
         scores.append(game.score)
         empties.append(empty)
-    return (scores, best_tiles, empties)
+    return scores, best_tiles, empties
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='A tutorial of argparse!')

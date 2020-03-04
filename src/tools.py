@@ -3,14 +3,9 @@ import time, sys
 from IPython.display import clear_output
 import pickle
 import neat
-import nltk
-from nltk import ngrams
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
 
 import graphviz
 
-from sklearn.metrics import confusion_matrix
 
 def update_progress(progress):
     '''
@@ -39,15 +34,34 @@ def update_progress(progress):
     print(text)
 
 def save_model(model,name):
+    '''
+    given a model object, saves that object via pickle to a models directory
+    ++++
+    Parameter
+    model (object, usually sikit model): object to save
+    
+    '''
     file_ext= '.sav'
     path = 'models/'
     pickle.dump(model, open(path+name+file_ext, 'wb'))
 
 
 
-def draw_net(config_path, genome, view=False, filename=None, node_names=None, show_disabled=True, prune_unused=False,
+def draw_net(config_path, genome, view=False, filename=None, node_names=None, show_disabled=False, prune_unused=False,
              node_colors=None, fmt='svg'):
-    """ Receives a genome and draws a neural network with arbitrary topology. """
+    """ 
+    Code pulled from code reclaimers at https://github.com/CodeReclaimers/neat-python/blob/master/examples/xor/visualize.py
+    Receives a genome and draws a neural network with arbitrary topology. 
+    Parameters
+    config_path (str): path to the neat configuration file used to evolve this net
+    genome (neat object): genome of nn you are drawing
+    view (bool): True will show it inline, or in your notebook, False will not
+    filename (str): what to name the diagram that this saves. 
+    node_names I don't know what this does
+    show_disabled (bool) False will show links in nodes that this induvidual has deactivated. # I really believe this makes no sense...the ai does not have that part if the genome has deactivated it.  
+    prune_unused (bool) :not sure what this one does, it might have something to do with how show_disabled doesn't make sense. 
+    
+    """
     # Attributes for network nodes.
     if graphviz is None:
         warnings.warn("This display is not available due to a missing optional dependency (graphviz)")
@@ -134,61 +148,10 @@ def draw_net(config_path, genome, view=False, filename=None, node_names=None, sh
 
 
 
-def predict_one(review):
-    '''
-    Parameters
-    review (str): a text review
-    '''
-    path = 'models/'
-    
-    tfid = pickle.load(open(path+'tf84.sav', 'rb'))
-    model = pickle.load(open(path+'ngramRF85.sav', 'rb'))
-    
-    ngrams = vectorizable_ngrams([review]) #string must becalled as a list to handle single strin
-    
-    tfstring = ' '.join(ngrams[0])
-    
-    print(tfstring) ##what it sees, hash it out for final. 
-    tfidfed = tfid.transform([tfstring])
-    
-    return model.predict(tfidfed)
 
-def predict_many(review_list):
-    path = 'models/'
 
-    tfid = pickle.load(open(path+'tf84.sav', 'rb'))
-    model = pickle.load(open(path+'ngramRF85.sav', 'rb'))
-
-    ngrams = vectorizable_ngrams(reviews) #string must becalled as a list to handle single strin
-    tfstring = [' '.join(items) for items in ngrams]
-
-    #print(tfstring) ##what it sees, hash it out for final. 
-
-    tfidfed = tfid.transform(tfstring)
-
-    return model.predict(tfidfed)
 
 
 # from sklearn.metrics import confusion_matrix
 #
 
-def report_score(model, X_train, X_test, y_train, y_test):
-    
-    '''
-    a function that reports the accuracy of the model.
-    Attributes:
-    models (lst): a list of instansiated models to test
-    Returns:
-    out array, model name, training score, testing score, precision, recall
-    '''
-    #training_score = model.score(X_train, y_train) ## Many models don't have scores!
-    #testing_score = model.score(X_test, y_test)
-    #print('Training score: {}, Testing score: {}'.format(training_score, testing_score))
-    tn, fp, fn, tp = confusion_matrix(y_test,model.predict(X_test)).ravel()
-    precision = tp/(fp+tp)
-    recall = tp/(fn+tp)
-    print('tn', '  fp', '  fn', '  tp')
-    print(tn, fp, fn, tp)
-    print('precision: '+str(precision), 'recall: '+ str(recall))
-    out_lst = [precision, recall]
-    return out_lst
