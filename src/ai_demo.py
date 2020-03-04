@@ -198,10 +198,11 @@ if __name__ == '__main__':
     parser.add_argument('-c', default = 'models/config/neat_config_2', help = 'neat-python config file is needed to rebuild the ai from the save')
     parser.add_argument('-s', default = .4, help = "how many seconds to wait between moves")
     parser.add_argument('-nm', default = 'models/tuesday_mk2.sav', help ='neat model to use for the neat display')
-    parser.add_argument('-qm', default = 'Q2000.h5', help = 'path of qm model to use')     
+    parser.add_argument('-qm', default = 'models/Q2000.h5', help = 'path of qm model to use')     
     args = parser.parse_args()
     
-    
+    sleep_time = float(args.s)
+
     which_ai = args.m
     
     if which_ai.lower() == 'N'.lower():
@@ -216,7 +217,7 @@ if __name__ == '__main__':
         ai_path = args.qm
 
     
-    sleep_time = args.s
+    
 
     if which_ai.lower() == 'N'.lower():
         display_neat_skills(saved_ai, config_path, sleep_time)
