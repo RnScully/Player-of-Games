@@ -4,18 +4,18 @@ from g2048 import Game2048
 import numpy as np
 
 from g2048 import Game2048
-from train_2048 import empties_state
+from neat_2048 import empties_state
 import numpy as np
 
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, 
+from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import to_categorical
 
 import matplotlib.pyplot as plt
 
-class RL_Player():
+class Q_Player():
     def __init__(self, reward_depth = 5, model = None, demo = False, headless = False):
         self.reward = 0
         self.gamma = 0.9
@@ -59,20 +59,20 @@ class RL_Player():
         return tokenized
     
     def clear_memory(self, game):
-    '''
-    method which clears the agent's memory when the game ends
-    ++++++++++
-    Parameters
-    game(g2048 object): the game
-    ++++++++++
-    Updates
-    self.memory to: list of empty lists
-    self.long_memory to:empty list
-    self.oldest_mem to: int(0)
-    ++++++++++
-    Returns
-    None
-    '''
+        '''
+        method which clears the agent's memory when the game ends
+        ++++++++++
+        Parameters
+        game(g2048 object): the game
+        ++++++++++
+        Updates
+        self.memory to: list of empty lists
+        self.long_memory to:empty list
+        self.oldest_mem to: int(0)
+        ++++++++++
+        Returns
+        None
+        '''
         if game.game_over == True:
             self.memory = [[] for _ in range(self.reward_depth)]
             self.long_memory = []
@@ -106,7 +106,7 @@ class RL_Player():
         
         
 
-        d = dict(ziAttributesp(np.array(output)[valid_moves], np.array(values)[valid_moves])) # all valid moves
+        d = dict(zip(np.array(output)[valid_moves], np.array(values)[valid_moves])) # all valid moves
         
         
         

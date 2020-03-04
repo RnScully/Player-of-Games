@@ -2,9 +2,32 @@ import time
 import neat
 from IPython.display import clear_output
 from g2048 import Game2048
-from train_2048 import ai_suggest_move
+
+from IPython.display import clear_output
+import sys
+
+
+from neat_2048 import ai_suggest_move
+from q_learn_2048 import Q_Player
 import pickle
 import argparse
+
+def print_move(x):
+    '''
+    takes an int, 2, 4, 6 or 8, and prints the move that represents
+    Paramaters
+    x (int) 2,4,6, or 8, or else nothing will happen. 
+
+    '''
+    if x == 6:
+        print('slide right')
+    if x == 8:
+        print('slide up')
+    if x ==4:
+        print('slide left')
+    if x == 2:
+        print('slide down')
+
 
 def demo_QR_learner(ai_path, sleep_time = 0, headless = True):
     '''
@@ -20,7 +43,7 @@ def demo_QR_learner(ai_path, sleep_time = 0, headless = True):
     game.score (int): final score
     
     '''
-    agent = RL_Player(model = ai_path, demo = True)
+    agent = Q_Player(model = ai_path, demo = True)
     game = Game2048(ai = True, headless = False, strict = False)
 
     
@@ -30,8 +53,8 @@ def demo_QR_learner(ai_path, sleep_time = 0, headless = True):
         #print('Game Over: {}'.format(game.game_over))
 
         move = agent.ai_suggest_move(game)
-        if headless == False:
-            game.show_board()
+        #if headless == False:
+            #game.show_board()
         #agent.calc_reward(game, move)
 
         #agent.give_reward(game)
@@ -44,10 +67,11 @@ def demo_QR_learner(ai_path, sleep_time = 0, headless = True):
 
         new_board = game.board
         time.sleep(sleep_time)
-    
+        # clear_output(wait = True)
+        sys.stderr.write("\x1b[2J\x1b[H") # cheating because it just adds space and you seem to have a new screen, but uh...time constraints
     return game.board.max(), game.score
 
-def display_neat_skills(saved_ai, config_path, tokenized = False):
+def display_neat_skills(saved_ai, config_path, tokenized = False, headless = False):
     '''
     A function that will have one AI play the game and display moves
     ++++++++++
@@ -55,6 +79,7 @@ def display_neat_skills(saved_ai, config_path, tokenized = False):
     saved_ai (str): path to python-neat genome you're running
     config_path (str): path to python-neat
     tokenized (bool): wether to use a 16 feature game board(False) or a 256 feature tokenized game board. (True)
+    headless (bool): whether to display the screen
     ++++++++++
     Returns
     game.board.max() (int): best tile reached in game
@@ -76,7 +101,12 @@ def display_neat_skills(saved_ai, config_path, tokenized = False):
             get_from_ai = ai_suggest_move(ai, game, headless = False, tokenize = tokenized) #must be int 2, 4, 6 or 8, related to moves down, right, left and up respectively
             game.get_move(ai_move = get_from_ai)
             game.game_step()
-            
+
+            if headless == False:
+                print_move(get_from_ai) #get from ai is the ai's move
+                print('')
+                sys.stderr.write("\x1b[2J\x1b[H") # cheating because it just adds space and you seem to have a new screen, but uh...time constraints
+
             time.sleep(sleep_time) #if you want it in realtime. For checking to see if is working, you want it all at once
        
     return game.board.max(), game.score
@@ -165,15 +195,30 @@ def random_play(num_runs, headless = True):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='A tutorial of argparse!')
     parser.add_argument("-m", required = True, help='model to display, Q for Q learner N for NEAT')
-    parser.add_argument('-c', required = True, help = 'neat-python config file is needed to rebuild the ai from the save')
+    parser.add_argument('-c', default = 'models/config/neat_config_2', help = 'neat-python config file is needed to rebuild the ai from the save')
     parser.add_argument('-s', default = .4, help = "how many seconds to wait between moves")
- 
+    parser.add_argument('-nm', default = 'models/tuesday_mk2.sav', help ='neat model to use for the neat display')
+    parser.add_argument('-qm', default = 'Q2000.h5', help = 'path of qm model to use')     
     args = parser.parse_args()
-    config_path = args.c
+    
+    
     which_ai = args.m
+    
+    if which_ai.lower() == 'N'.lower():
+        #get info for NEAT
+        config_path = args.c
+        neat_model_path = args.nm
+        with open(neat_model_path, 'rb') as pickle_file:
+            saved_ai = pickle.load(pickle_file)
+        
+    
+    else: #oh ho ho, don't do error trapping? that's lazy coding for you
+        ai_path = args.qm
+
+    
     sleep_time = args.s
 
-    if which ai == N:
+    if which_ai.lower() == 'N'.lower():
         display_neat_skills(saved_ai, config_path, sleep_time)
     else:
-       demo_QR_learner()
+       demo_QR_learner(ai_path, sleep_time = sleep_time, headless = False)
