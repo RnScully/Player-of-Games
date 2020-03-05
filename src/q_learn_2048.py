@@ -12,6 +12,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import to_categorical
+from tools import update_progress
 
 import matplotlib.pyplot as plt
 
@@ -326,3 +327,73 @@ class Q_Player():
 
         
         return model
+
+def print_move(x):
+    '''
+    a helper function that prints the moves being made
+    '''
+    if x == 6:
+        print('slide right')
+    if x == 8:
+        print('slide up')
+    if x ==4:
+        print('slide left')
+    if x == 2:
+        print('slide down')
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='A tutorial of argparse!')
+    parser.add_argument("-v", default =True, help='(bool) trian the net in Headless mode')
+    parser.add_argument('-l', required=True, help='(str) path of model to load')
+    parser.add_argument('-d', default = 5, help = '(int) how far back to train on moves')
+    parser.add_argument('-n', required = True, default = False, help = '(str) name for model')
+    parser.add_argument('-g', required = False, default = 100, help = '(int) number of games to train in')
+
+    args = parser.parse_args()
+    headless = bool(args.v)
+    model_path = args.l
+    is_parallel = bool(args.p)
+    name = args.n
+    num_run = args.g
+    depth = args.d
+    
+    
+    agent = Q_Player(depth)
+
+    for i in range(num_run):
+        agent.clear_memory(game)
+        game = Game2048(ai = True, headless = headless, strict = False)
+        
+        if headless == False:
+            print('new game')
+            print('')
+                
+
+        while game.game_over == False:
+            last_board = game.board
+            #print('Game Over: {}'.format(game.game_over))
+            
+            move = agent.ai_suggest_move(game)
+            
+            
+            agent.calc_reward(game, move)
+                
+            agent.give_reward(game)
+            
+            game.get_move(move)
+            game.game_step()
+            
+            if head == False:
+                print_move(move)
+                print('')
+                print('new move')
+                print('')
+
+            new_board = game.board
+        agent.calc_reward(game, move) # gives game-over rewards
+        #agent.give_reward(game)
+        
+        
+    name = name + '.h5'
+    agent.model.save(name)
