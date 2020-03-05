@@ -1,20 +1,22 @@
 
-
-from g2048 import Game2048
+import matplotlib.pyplot as plt
+import argparse
 import numpy as np
+import random
 
 from g2048 import Game2048
 from neat_2048 import empties_state
-import numpy as np
+from tools import update_progress
 
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import to_categorical
-from tools import update_progress
 
-import matplotlib.pyplot as plt
+
+
+
 
 class Q_Player():
     def __init__(self, reward_depth = 5, model = None, demo = False, headless = False):
@@ -184,7 +186,6 @@ class Q_Player():
                                    [ 1,  1,  1,  1]])
         
         tiles_combined = empties_state(old_board, next_board)
-        Attributes
         
         big_tiles = dict({32:6, 64: 6, 128: 10, 256: 10, 512: 20, 1024: 30, 2048: 100, 4096: 1000})
         if np.amax(old_board) < np.amax(next_board): # checks to see if the bot has combined tiles or gotten a big one. 
@@ -345,7 +346,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='A tutorial of argparse!')
     parser.add_argument("-v", default =True, help='(bool) trian the net in Headless mode')
-    parser.add_argument('-l', required=True, help='(str) path of model to load')
+    parser.add_argument('-m', default = None, help='(str) path of model to load')
     parser.add_argument('-d', default = 5, help = '(int) how far back to train on moves')
     parser.add_argument('-n', required = True, default = False, help = '(str) name for model')
     parser.add_argument('-g', required = False, default = 100, help = '(int) number of games to train in')
@@ -353,18 +354,18 @@ if __name__ == "__main__":
     args = parser.parse_args()
     headless = bool(args.v)
     model_path = args.l
-    is_parallel = bool(args.p)
     name = args.n
-    num_run = args.g
-    depth = args.d
+    num_run = int(args.g)
+    depth = int(args.d)
     
     
     agent = Q_Player(depth)
+    game = Game2048(ai = True, headless = headless, strict = False) #here becasue clear_memory needs a game. I'm sorry. 
 
     for i in range(num_run):
-        agent.clear_memory(game)
-        game = Game2048(ai = True, headless = headless, strict = False)
         
+        game = Game2048(ai = True, headless = headless, strict = False)
+        agent.clear_memory(game)
         if headless == False:
             print('new game')
             print('')
@@ -384,7 +385,7 @@ if __name__ == "__main__":
             game.get_move(move)
             game.game_step()
             
-            if head == False:
+            if headless == False:
                 print_move(move)
                 print('')
                 print('new move')
