@@ -1,5 +1,6 @@
 # Player of Games
-a Neural Net Learning to play the game 2048 project. 
+![Well...it makes moves!](https://github.com/RnScully/Player-of-Games/blob/master/img/ai_demo.gif)
+A project to train neural nets to play the game 2048 using NEAT and Q-Learning methods. 
 
 
 ## The problem space: the game 2048:
