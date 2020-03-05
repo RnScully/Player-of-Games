@@ -5,7 +5,7 @@ from g2048 import Game2048
 
 from IPython.display import clear_output
 import sys
-
+import os
 
 from neat_2048 import ai_suggest_move
 from q_learn_2048 import Q_Player
@@ -17,7 +17,6 @@ def print_move(x):
     takes an int, 2, 4, 6 or 8, and prints the move that represents
     Paramaters
     x (int) 2,4,6, or 8, or else nothing will happen. 
-
     '''
     if x == 6:
         print('slide right')
@@ -49,6 +48,7 @@ def demo_QR_learner(ai_path, sleep_time = 0, headless = True):
     
 
     while game.game_over == False:
+        
         last_board = game.board
         #print('Game Over: {}'.format(game.game_over))
 
@@ -60,6 +60,7 @@ def demo_QR_learner(ai_path, sleep_time = 0, headless = True):
         #agent.give_reward(game)
 
         game.get_move(move)
+        os.system('clear')
         game.game_step()
         if headless == False:
             print_move(move)
@@ -68,7 +69,7 @@ def demo_QR_learner(ai_path, sleep_time = 0, headless = True):
         new_board = game.board
         time.sleep(sleep_time)
         # clear_output(wait = True)
-        sys.stderr.write("\x1b[2J\x1b[H") # cheating because it just adds space and you seem to have a new screen, but uh...time constraints
+         # cheating because it just adds space and you seem to have a new screen, but uh...time constraints
     return game.board.max(), game.score
 
 def display_neat_skills(saved_ai, config_path, tokenized = False, headless = False):
@@ -100,12 +101,12 @@ def display_neat_skills(saved_ai, config_path, tokenized = False, headless = Fal
             
             get_from_ai = ai_suggest_move(ai, game, headless = False, tokenize = tokenized) #must be int 2, 4, 6 or 8, related to moves down, right, left and up respectively
             game.get_move(ai_move = get_from_ai)
+            os.system('clear') #I thought I was cheating before, but apparently allof these just print huge ammoungs of empty space. 
             game.game_step()
 
             if headless == False:
                 print_move(get_from_ai) #get from ai is the ai's move
                 print('')
-                sys.stderr.write("\x1b[2J\x1b[H") # cheating because it just adds space and you seem to have a new screen, but uh...time constraints
 
             time.sleep(sleep_time) #if you want it in realtime. For checking to see if is working, you want it all at once
        
