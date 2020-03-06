@@ -32,7 +32,7 @@ Args are:
 - -g : how many generations you want the evolvers to get. 
 
 ### q_learn_2048.py
-This script trains a Q-Learner using tensorflow Nueral Nets. 
+This script trains a Q-Learner using tensorflow Neural Nets. 
 
 Args are:
 - -v : Bool, true will run in headless mode
